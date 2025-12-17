@@ -71,7 +71,9 @@
                 <i class="fa-solid fa-ellipsis-vertical text-muted"></i>
             </div>
             <div class="card-body">
-                <canvas id="lineChart" height="120"></canvas>
+                <div style="height: 300px; position: relative;">
+                    <canvas id="lineChart"></canvas>
+                </div>
             </div>
         </div>
     </div>
@@ -81,19 +83,20 @@
             <div class="card-header bg-white py-3">
                 <h6 class="m-0 fw-bold text-primary">Komposisi Beban</h6>
             </div>
-            <div class="card-body d-flex align-items-center justify-content-center">
-                <canvas id="pieChart"></canvas>
+            <div class="card-body">
+                 <div style="height: 300px; position: relative; display: flex; align-items: center; justify-content: center;">
+                    <canvas id="pieChart"></canvas>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    // Styling Font Global Chart
     Chart.defaults.font.family = "'Poppins', sans-serif";
     Chart.defaults.color = '#858796';
 
-    // 1. Line Chart Config
+    // 1. Line Chart
     new Chart(document.getElementById('lineChart'), {
         type: 'line',
         data: {
@@ -105,15 +108,11 @@
                 backgroundColor: 'rgba(0, 94, 184, 0.05)',
                 pointBackgroundColor: '#fff',
                 pointBorderColor: '#005eb8',
-                pointHoverBackgroundColor: '#005eb8',
-                pointHoverBorderColor: '#fff',
-                fill: true,
-                tension: 0.4,
-                borderWidth: 2
+                fill: true, tension: 0.4, borderWidth: 2
             }]
         },
         options: {
-            maintainAspectRatio: false,
+            maintainAspectRatio: false, // PENTING: Agar ikut tinggi div
             plugins: { legend: { display: false } },
             scales: {
                 x: { grid: { display: false } },
@@ -122,29 +121,36 @@
         }
     });
 
-    // 2. Pie Chart Config
-    new Chart(document.getElementById('pieChart'), {
-        type: 'doughnut',
-        data: {
-            labels: {{ pie_labels|safe }},
-            datasets: [{
-                data: {{ pie_values|safe }},
-                backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b'],
-                hoverOffset: 4
-            }]
-        },
-        options: {
-            maintainAspectRatio: false,
-            cutout: '75%',
-            plugins: {
-                legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } }
+    // 2. Pie Chart
+    const pieDataValues = {{ pie_values|safe }};
+    const pieDataLabels = {{ pie_labels|safe }};
+    
+    // Cek jika data kosong, tampilkan placeholder
+    if (pieDataValues.length === 0) {
+        document.getElementById('pieChart').parentNode.innerHTML = '<p class="text-center text-muted">Belum ada data beban.</p>';
+    } else {
+        new Chart(document.getElementById('pieChart'), {
+            type: 'doughnut',
+            data: {
+                labels: pieDataLabels,
+                datasets: [{
+                    data: pieDataValues,
+                    backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b'],
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                maintainAspectRatio: false, // PENTING
+                cutout: '70%',
+                plugins: {
+                    legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } }
+                }
             }
-        }
-    });
+        });
+    }
 </script>
 
 <style>
-    /* Efek Hover Sedikit Naik agar Interaktif */
     .hover-effect { transition: transform 0.2s; }
     .hover-effect:hover { transform: translateY(-5px); }
 </style>
