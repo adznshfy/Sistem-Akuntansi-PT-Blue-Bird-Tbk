@@ -1,45 +1,26 @@
 {% extends 'base.html' %}
-
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card p-4">
-            <h3 class="text-bb mb-4">Input Jurnal Umum</h3>
-            <form method="POST">
-                <div class="mb-3">
-                    <label>Tanggal</label>
-                    <input type="date" name="tanggal" class="form-control" value="{{ today }}" required>
+<div class="card col-lg-10 mx-auto">
+    <div class="card-header fw-bold">Input Transaksi Baru</div>
+    <div class="card-body p-4">
+        <form method="POST">
+            <div class="row mb-3">
+                <div class="col-md-4"><label class="form-label small fw-bold">TANGGAL</label><input type="date" name="tanggal" class="form-control" value="{{ today }}" required></div>
+                <div class="col-md-8"><label class="form-label small fw-bold">DESKRIPSI</label><input type="text" name="deskripsi" class="form-control" required></div>
+            </div>
+            <div class="row mb-3 bg-light p-3 rounded mx-1">
+                <div class="col-md-6 border-end">
+                    <label class="form-label text-success fw-bold">DEBIT (Masuk/Beban)</label>
+                    <select name="akun_debit" class="form-select" required>{% for a in akun_list %}<option value="{{ a.kode_akun }}">{{ a.kode_akun }} - {{ a.nama_akun }}</option>{% endfor %}</select>
                 </div>
-                <div class="mb-3">
-                    <label>Deskripsi Transaksi</label>
-                    <input type="text" name="deskripsi" class="form-control" placeholder="Contoh: Pendapatan Sewa Taksi" required>
+                <div class="col-md-6">
+                    <label class="form-label text-danger fw-bold">KREDIT (Keluar/Sumber)</label>
+                    <select name="akun_kredit" class="form-select" required><option selected disabled>Pilih...</option>{% for a in akun_list %}<option value="{{ a.kode_akun }}">{{ a.kode_akun }} - {{ a.nama_akun }}</option>{% endfor %}</select>
                 </div>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label>Akun DEBIT</label>
-                        <select name="akun_debit" class="form-select" required>
-                            {% for akun in akun_list %}
-                            <option value="{{ akun.kode_akun }}">{{ akun.kode_akun }} - {{ akun.nama_akun }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label>Akun KREDIT</label>
-                        <select name="akun_kredit" class="form-select" required>
-                            <option selected disabled>Pilih Akun...</option>
-                            {% for akun in akun_list %}
-                            <option value="{{ akun.kode_akun }}">{{ akun.kode_akun }} - {{ akun.nama_akun }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-                <div class="mb-4">
-                    <label>Nominal (Rp)</label>
-                    <input type="number" name="nominal" class="form-control" placeholder="0" required>
-                </div>
-                <button type="submit" class="btn btn-primary w-100 py-2">POSTING JURNAL</button>
-            </form>
-        </div>
+            </div>
+            <div class="mb-4"><label class="form-label small fw-bold">NOMINAL</label><div class="input-group"><span class="input-group-text">Rp</span><input type="number" name="nominal" class="form-control fw-bold" required></div></div>
+            <button type="submit" class="btn btn-primary w-100 py-2">POSTING</button>
+        </form>
     </div>
 </div>
 {% endblock %}

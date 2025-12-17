@@ -1,28 +1,41 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="card p-4">
-    <h3 class="mb-3 text-primary">Chart of Accounts (COA)</h3>
-    <table class="table table-hover">
-        <thead class="table-light">
-            <tr>
-                <th>Kode</th>
-                <th>Nama Akun</th>
-                <th>Kategori</th>
-                <th>Saldo Normal</th>
-                <th class="text-end">Saldo Saat Ini</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for row in coa_list %}
-            <tr>
-                <td><b>{{ row.kode_akun }}</b></td>
-                <td>{{ row.nama_akun }}</td>
-                <td><span class="badge bg-secondary">{{ row.kategori }}</span></td>
-                <td>{{ row.saldo_normal }}</td>
-                <td class="text-end fw-bold">Rp {{ "{:,.0f}".format(row.saldo_akhir) }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<div class="card">
+    <div class="card-header">
+        <i class="fa-solid fa-folder-tree me-2"></i> Chart of Accounts (COA)
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th class="ps-4">Kode</th>
+                    <th>Nama Akun</th>
+                    <th>Kategori</th>
+                    <th>Posisi Normal</th>
+                    <th class="text-end pe-4">Saldo Terkini</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in coa_list %}
+                <tr>
+                    <td class="ps-4 fw-bold text-primary">{{ row.kode_akun }}</td>
+                    <td>{{ row.nama_akun }}</td>
+                    <td>
+                        <span class="badge 
+                        {% if row.kategori == 'Aset' %}bg-success
+                        {% elif row.kategori == 'Liabilitas' %}bg-warning text-dark
+                        {% elif row.kategori == 'Ekuitas' %}bg-info text-dark
+                        {% elif row.kategori == 'Pendapatan' %}bg-primary
+                        {% else %}bg-danger{% endif %}">
+                        {{ row.kategori }}
+                        </span>
+                    </td>
+                    <td><span class="text-muted small text-uppercase">{{ row.saldo_normal }}</span></td>
+                    <td class="text-end pe-4 fw-bold fs-6">Rp {{ "{:,.0f}".format(row.saldo_akhir) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 {% endblock %}

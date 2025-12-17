@@ -1,41 +1,19 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="card p-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3 class="text-primary">Jurnal Umum</h3>
-        <a href="/jurnal" class="btn btn-sm btn-success">+ Input Baru</a>
+<div class="card">
+    <div class="card-header d-flex justify-content-between">
+        <span><i class="fa-solid fa-book me-2"></i> Jurnal Umum</span>
+        <a href="/jurnal" class="btn btn-sm btn-primary">+ Input Baru</a>
     </div>
-
     <div class="table-responsive">
-        <table class="table table-bordered table-striped">
-            <thead class="table-dark text-center">
-                <tr>
-                    <th>Tanggal</th>
-                    <th>Keterangan</th>
-                    <th>Ref (Kode)</th>
-                    <th>Nama Akun</th>
-                    <th>Debit (Rp)</th>
-                    <th>Kredit (Rp)</th>
-                </tr>
-            </thead>
+        <table class="table table-hover table-striped mb-0 small">
+            <thead class="table-light"><tr><th>Tanggal</th><th>Keterangan</th><th>Ref</th><th>Akun</th><th class="text-end">Debit</th><th class="text-end">Kredit</th></tr></thead>
             <tbody>
                 {% for row in data_jurnal %}
                 <tr>
-                    <td>{{ row.tanggal }}</td>
-                    <td>{{ row.deskripsi }}</td>
-                    <td class="text-center">{{ row.kode_akun }}</td>
-                    <td>{{ row.nama_akun }}</td>
-                    
-                    <td class="text-end">
-                        {% if row.debit > 0 %}
-                            {{ "{:,.0f}".format(row.debit) }}
-                        {% else %} - {% endif %}
-                    </td>
-                    <td class="text-end">
-                        {% if row.kredit > 0 %}
-                            {{ "{:,.0f}".format(row.kredit) }}
-                        {% else %} - {% endif %}
-                    </td>
+                    <td>{{ row.tanggal }}</td><td>{{ row.deskripsi }}</td><td>{{ row.kode_akun }}</td><td>{{ row.nama_akun }}</td>
+                    <td class="text-end text-success fw-bold">{% if row.debit > 0 %}{{ "{:,.0f}".format(row.debit) }}{% endif %}</td>
+                    <td class="text-end text-danger fw-bold">{% if row.kredit > 0 %}{{ "{:,.0f}".format(row.kredit) }}{% endif %}</td>
                 </tr>
                 {% endfor %}
             </tbody>

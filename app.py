@@ -23,8 +23,8 @@ def dashboard():
     
     cur.execute("SELECT SUM(debit) as d, SUM(kredit) as k FROM jurnal")
     res = cur.fetchone()
-    total_debit = res['d'] or 0
-    total_kredit = res['k'] or 0
+    t_debit = res['d'] or 0
+    t_kredit = res['k'] or 0
     
     # Data Grafik
     cur.execute("SELECT c.kategori, SUM(j.kredit - j.debit) as val FROM coa c JOIN jurnal j ON c.kode_akun=j.kode_akun WHERE c.kategori='Pendapatan' GROUP BY c.kategori")
@@ -39,37 +39,35 @@ def dashboard():
     cur.execute("SELECT c.nama_akun, SUM(j.debit - j.kredit) as val FROM coa c JOIN jurnal j ON c.kode_akun=j.kode_akun WHERE c.kategori='Beban' GROUP BY c.nama_akun")
     pie_data = cur.fetchall()
     
-    # Line Chart
+    # Line Chart (Arus Kas)
     cur.execute("SELECT tanggal, SUM(debit - kredit) as flow FROM jurnal WHERE kode_akun='1100' GROUP BY tanggal ORDER BY tanggal LIMIT 7")
     line_data = cur.fetchall()
     
     conn.close()
     return render_template('dashboard.html', 
-                           t_debit=total_debit, t_kredit=total_kredit,
+                           t_debit=t_debit, t_kredit=t_kredit,
                            bar_data=[float(val_pdpt), float(val_beban)],
                            pie_labels=json.dumps([r['nama_akun'] for r in pie_data]), 
                            pie_values=json.dumps([float(r['val']) for r in pie_data]),
                            line_labels=json.dumps([str(r['tanggal']) for r in line_data]), 
                            line_values=json.dumps([float(r['flow']) for r in line_data]))
 
-# --- JURNAL UMUM (MENU BARU) ---
+# --- JURNAL UMUM (KRONOLOGIS) ---
 @app.route('/jurnal_umum')
 def jurnal_umum():
     conn = get_db()
     cur = conn.cursor(dictionary=True)
-    # Ambil semua jurnal urut tanggal terbaru
     query = """
         SELECT j.tanggal, j.deskripsi, j.kode_akun, c.nama_akun, j.debit, j.kredit 
-        FROM jurnal j 
-        JOIN coa c ON j.kode_akun = c.kode_akun 
+        FROM jurnal j JOIN coa c ON j.kode_akun = c.kode_akun 
         ORDER BY j.tanggal DESC, j.id DESC
     """
     cur.execute(query)
-    data_jurnal = cur.fetchall()
+    data = cur.fetchall()
     conn.close()
-    return render_template('jurnal_umum.html', data_jurnal=data_jurnal)
+    return render_template('jurnal_umum.html', data_jurnal=data)
 
-# --- COA ---
+# --- MASTER COA ---
 @app.route('/coa')
 def coa():
     conn = get_db()
@@ -109,7 +107,7 @@ def input_jurnal():
                 conn.commit()
                 flash('Jurnal berhasil disimpan!', 'success')
         except Exception as e:
-            flash(f"Terjadi kesalahan: {e}", 'danger')
+            flash(f"Error: {e}", 'danger')
         return redirect(url_for('input_jurnal'))
         
     cur.execute("SELECT * FROM coa ORDER BY kode_akun")
@@ -130,9 +128,13 @@ def bukubesar():
     conn.close()
     return render_template('bukubesar.html', akun_list=akun_list, transaksi=transaksi, selected=selected)
 
-# --- LAPORAN KEUANGAN ---
+# --- LAPORAN KEUANGAN (DINAMIS) ---
 @app.route('/laporan')
-def laporan():
+def laporan_default():
+    return redirect(url_for('laporan_view', jenis='labarugi'))
+
+@app.route('/laporan/<jenis>')
+def laporan_view(jenis):
     conn = get_db()
     cur = conn.cursor(dictionary=True)
     
@@ -154,13 +156,17 @@ def laporan():
     cur.execute("SELECT c.nama_akun, SUM(kredit-debit) as val FROM coa c JOIN jurnal j ON c.kode_akun=j.kode_akun WHERE c.kategori='Ekuitas' GROUP BY c.nama_akun HAVING val!=0")
     ekuitas = cur.fetchall()
     
+    t_liab = sum(x['val'] for x in liabilitas)
+    t_ekui = sum(x['val'] for x in ekuitas)
+    t_pasiva = t_liab + t_ekui + laba # Validasi Balance
+    
     # 3. Arus Kas
     cur.execute("SELECT tanggal, deskripsi, (debit-kredit) as aliran FROM jurnal WHERE kode_akun='1100' ORDER BY tanggal")
     arus_kas = cur.fetchall()
     kas_akhir = sum(x['aliran'] for x in arus_kas)
     
     conn.close()
-    return render_template('laporan.html', pdpt=pdpt, beban=beban, laba=laba, aset=aset, t_aset=t_aset, liabilitas=liabilitas, ekuitas=ekuitas, arus_kas=arus_kas, kas_akhir=kas_akhir)
+    return render_template('laporan.html', jenis=jenis, pdpt=pdpt, beban=beban, laba=laba, aset=aset, t_aset=t_aset, liabilitas=liabilitas, ekuitas=ekuitas, t_pasiva=t_pasiva, arus_kas=arus_kas, kas_akhir=kas_akhir)
 
 if __name__ == '__main__':
     app.run(debug=True)

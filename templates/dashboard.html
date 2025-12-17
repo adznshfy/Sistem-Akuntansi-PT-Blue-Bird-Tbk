@@ -1,80 +1,41 @@
 {% extends 'base.html' %}
-
 {% block content %}
-<h2 class="mb-4">Dashboard Keuangan</h2>
-
-<div class="row mb-4">
-    <div class="col-md-6">
-        <div class="card p-3 bg-primary text-white">
-            <h5>Total Debit (Aktivitas)</h5>
-            <h3>Rp {{ "{:,.0f}".format(t_debit) }}</h3>
+<h3 class="fw-bold text-dark mb-4">Dashboard Overview</h3>
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card h-100 border-start border-4 border-primary">
+            <div class="card-body">
+                <p class="text-muted mb-1 small fw-bold">TOTAL DEBIT</p>
+                <h4 class="fw-bold text-primary">Rp {{ "{:,.0f}".format(t_debit) }}</h4>
+            </div>
         </div>
     </div>
-    <div class="col-md-6">
-        <div class="card p-3 bg-success text-white">
-            <h5>Total Kredit (Aktivitas)</h5>
-            <h3>Rp {{ "{:,.0f}".format(t_kredit) }}</h3>
-        </div>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-md-8">
-        <div class="card p-3 mb-4">
-            <h5>Tren Arus Kas (Harian)</h5>
-            <canvas id="lineChart"></canvas>
-        </div>
-        <div class="card p-3">
-            <h5>Pendapatan vs Beban</h5>
-            <canvas id="barChart"></canvas>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card p-3" style="height: 100%;">
-            <h5>Komposisi Beban</h5>
-            <canvas id="pieChart"></canvas>
+    <div class="col-md-3">
+        <div class="card h-100 border-start border-4 border-danger">
+            <div class="card-body">
+                <p class="text-muted mb-1 small fw-bold">TOTAL KREDIT</p>
+                <h4 class="fw-bold text-danger">Rp {{ "{:,.0f}".format(t_kredit) }}</h4>
+            </div>
         </div>
     </div>
 </div>
 
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card h-100">
+            <div class="card-header">Tren Arus Kas (7 Hari)</div>
+            <div class="card-body"><canvas id="lineChart" height="120"></canvas></div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card h-100">
+            <div class="card-header">Komposisi Beban</div>
+            <div class="card-body"><canvas id="pieChart"></canvas></div>
+        </div>
+    </div>
+</div>
 <script>
-    // 1. Line Chart
-    new Chart(document.getElementById('lineChart'), {
-        type: 'line',
-        data: {
-            labels: {{ line_labels|safe }},
-            datasets: [{
-                label: 'Arus Kas Masuk/Keluar',
-                data: {{ line_values|safe }},
-                borderColor: '#005eb8',
-                tension: 0.1
-            }]
-        }
-    });
-
-    // 2. Bar Chart
-    new Chart(document.getElementById('barChart'), {
-        type: 'bar',
-        data: {
-            labels: ['Pendapatan', 'Beban'],
-            datasets: [{
-                label: 'Total (Rp)',
-                data: {{ bar_data|safe }},
-                backgroundColor: ['#198754', '#dc3545']
-            }]
-        }
-    });
-
-    // 3. Pie Chart
-    new Chart(document.getElementById('pieChart'), {
-        type: 'doughnut',
-        data: {
-            labels: {{ pie_labels|safe }},
-            datasets: [{
-                data: {{ pie_values|safe }},
-                backgroundColor: ['#ffc107', '#fd7e14', '#dc3545', '#6c757d']
-            }]
-        }
-    });
+    new Chart(document.getElementById('lineChart'), { type: 'line', data: { labels: {{ line_labels|safe }}, datasets: [{ label: 'Cash Flow', data: {{ line_values|safe }}, borderColor: '#005eb8', fill: true }] } });
+    new Chart(document.getElementById('pieChart'), { type: 'doughnut', data: { labels: {{ pie_labels|safe }}, datasets: [{ data: {{ pie_values|safe }}, backgroundColor: ['#4e73df', '#1cc88a', '#e74a3b', '#f6c23e'] }] } });
 </script>
 {% endblock %}

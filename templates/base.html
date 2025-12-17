@@ -3,45 +3,165 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blue Bird Finance</title>
+    <title>Blue Bird Finance System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
-        body { background-color: #f8f9fa; }
-        .sidebar { min-height: 100vh; background-color: #005eb8; color: white; }
-        .nav-link { color: rgba(255,255,255,0.8); margin-bottom: 5px; }
-        .nav-link:hover, .nav-link.active { background-color: rgba(255,255,255,0.2); color: white; font-weight: bold; border-radius: 5px; }
-        .content { padding: 30px; }
-        .card { border: none; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        :root {
+            --bb-blue: #005eb8;
+            --bb-dark: #004485;
+            --bg-light: #f3f4f6;
+            --sidebar-width: 260px;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-light);
+            overflow-x: hidden;
+        }
+
+        /* SIDEBAR STYLE */
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background: linear-gradient(180deg, var(--bb-blue) 0%, var(--bb-dark) 100%);
+            color: white;
+            padding-top: 20px;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        /* BAGIAN LOGO & BRAND */
+        .sidebar-brand {
+            padding: 0 20px 20px;
+            font-size: 22px;
+            font-weight: 700;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px; /* Jarak antara logo dan tulisan */
+        }
+
+        /* Styling agar logo rapi */
+        .sidebar-brand img {
+            height: 40px;       /* Tinggi logo pas */
+            width: auto;        /* Lebar menyesuaikan */
+            background: white;  /* Kotak putih di belakang logo agar kontras */
+            padding: 5px;
+            border-radius: 8px; /* Sudut tumpul */
+        }
+
+        .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 12px 25px;
+            font-size: 14px;
+            display: flex; align-items: center; gap: 15px;
+            transition: all 0.2s;
+            border-right: 4px solid transparent;
+        }
+
+        .nav-link:hover {
+            color: white;
+            background-color: rgba(255,255,255,0.1);
+        }
+
+        .nav-link.active {
+            color: white;
+            background-color: rgba(255,255,255,0.15);
+            border-right: 4px solid #fff;
+            font-weight: 600;
+        }
+
+        .nav-submenu .nav-link {
+            padding-left: 55px;
+            font-size: 13px;
+        }
+        
+        .chevron-icon { transition: transform 0.3s; }
+        .nav-link[aria-expanded="true"] .chevron-icon { transform: rotate(180deg); }
+
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 30px;
+            min-height: 100vh;
+        }
+
+        .card { background: white; border: none; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 25px; }
+        .card-header { background: white; border-bottom: 1px solid #eee; padding: 20px 25px; font-weight: 600; color: var(--bb-blue); border-radius: 12px 12px 0 0 !important; }
+        .card-body { padding: 25px; }
     </style>
 </head>
 <body>
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-md-2 sidebar p-4">
-                <h4 class="mb-5 fw-bold">BLUE BIRD</h4>
-                <nav class="nav flex-column">
-                    <a class="nav-link" href="/dashboard">📊 Dashboard</a>
-                    <a class="nav-link" href="/coa">📁 Data COA</a>
-                    <a class="nav-link" href="/jurnal">📝 Input Jurnal</a>
-                    <a class="nav-link" href="/jurnal_umum">📔 Jurnal Umum</a>
-                    <a class="nav-link" href="/bukubesar">📚 Buku Besar</a>
-                    <a class="nav-link" href="/laporan">📈 Laporan</a>
+
+    <nav class="sidebar">
+        <div class="sidebar-brand">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo BB">
+            <span>BLUE BIRD</span>
+        </div>
+        
+        <div class="nav flex-column">
+            <a class="nav-link {{ 'active' if request.path == '/dashboard' or request.path == '/' }}" href="/dashboard">
+                <i class="fa-solid fa-chart-line"></i> Dashboard
+            </a>
+            
+            <a class="nav-link {{ 'active' if request.path == '/coa' }}" href="/coa">
+                <i class="fa-solid fa-folder-tree"></i> Master COA
+            </a>
+            
+            <a class="nav-link {{ 'active' if request.path == '/jurnal' }}" href="/jurnal">
+                <i class="fa-solid fa-pen-to-square"></i> Input Jurnal
+            </a>
+            
+            <a class="nav-link {{ 'active' if request.path == '/jurnal_umum' }}" href="/jurnal_umum">
+                <i class="fa-solid fa-book"></i> Jurnal Umum
+            </a>
+            
+            <a class="nav-link {{ 'active' if request.path == '/bukubesar' }}" href="/bukubesar">
+                <i class="fa-solid fa-layer-group"></i> Buku Besar
+            </a>
+            
+            {% set is_laporan = request.path.startswith('/laporan') %}
+            <a class="nav-link d-flex justify-content-between align-items-center {{ '' if is_laporan else 'collapsed' }}" 
+               data-bs-toggle="collapse" 
+               href="#submenuLaporan" 
+               role="button" 
+               aria-expanded="{{ 'true' if is_laporan else 'false' }}">
+                <span><i class="fa-solid fa-file-invoice-dollar"></i> Laporan</span>
+                <i class="fa-solid fa-chevron-down small chevron-icon"></i>
+            </a>
+            
+            <div class="collapse {{ 'show' if is_laporan else '' }}" id="submenuLaporan">
+                <nav class="nav flex-column nav-submenu bg-dark bg-opacity-25 py-2">
+                    <a class="nav-link {{ 'active' if request.path == '/laporan/labarugi' }}" href="/laporan/labarugi">1. Laba Rugi</a>
+                    <a class="nav-link {{ 'active' if request.path == '/laporan/neraca' }}" href="/laporan/neraca">2. Posisi Keuangan</a>
+                    <a class="nav-link {{ 'active' if request.path == '/laporan/ekuitas' }}" href="/laporan/ekuitas">3. Perubahan Ekuitas</a>
+                    <a class="nav-link {{ 'active' if request.path == '/laporan/aruskas' }}" href="/laporan/aruskas">4. Arus Kas</a>
                 </nav>
             </div>
-            
-            <div class="col-md-10 content">
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                    {% if messages %}
-                        {% for cat, msg in messages %}
-                            <div class="alert alert-{{ cat }}">{{ msg }}</div>
-                        {% endfor %}
-                    {% endif %}
-                {% endwith %}
-                
-                {% block content %}{% endblock %}
-            </div>
         </div>
-    </div>
+    </nav>
+
+    <main class="main-content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} shadow-sm border-0 mb-4 fade show">
+                        <i class="fa-solid fa-info-circle me-2"></i> {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
