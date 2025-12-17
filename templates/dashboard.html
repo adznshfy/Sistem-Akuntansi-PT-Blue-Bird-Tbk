@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2 class="mb-4">Dashboard Keuangan</h2>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card p-3 bg-primary text-white">
+            <h5>Total Debit (Aktivitas)</h5>
+            <h3>Rp {{ "{:,.0f}".format(t_debit) }}</h3>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card p-3 bg-success text-white">
+            <h5>Total Kredit (Aktivitas)</h5>
+            <h3>Rp {{ "{:,.0f}".format(t_kredit) }}</h3>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card p-3 mb-4">
+            <h5>Tren Arus Kas (Harian)</h5>
+            <canvas id="lineChart"></canvas>
+        </div>
+        <div class="card p-3">
+            <h5>Pendapatan vs Beban</h5>
+            <canvas id="barChart"></canvas>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card p-3" style="height: 100%;">
+            <h5>Komposisi Beban</h5>
+            <canvas id="pieChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 1. Line Chart
+    new Chart(document.getElementById('lineChart'), {
+        type: 'line',
+        data: {
+            labels: {{ line_labels|safe }},
+            datasets: [{
+                label: 'Arus Kas Masuk/Keluar',
+                data: {{ line_values|safe }},
+                borderColor: '#005eb8',
+                tension: 0.1
+            }]
+        }
+    });
+
+    // 2. Bar Chart
+    new Chart(document.getElementById('barChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Pendapatan', 'Beban'],
+            datasets: [{
+                label: 'Total (Rp)',
+                data: {{ bar_data|safe }},
+                backgroundColor: ['#198754', '#dc3545']
+            }]
+        }
+    });
+
+    // 3. Pie Chart
+    new Chart(document.getElementById('pieChart'), {
+        type: 'doughnut',
+        data: {
+            labels: {{ pie_labels|safe }},
+            datasets: [{
+                data: {{ pie_values|safe }},
+                backgroundColor: ['#ffc107', '#fd7e14', '#dc3545', '#6c757d']
+            }]
+        }
+    });
+</script>
+{% endblock %}

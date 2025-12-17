@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card p-4">
+    <h3 class="mb-3 text-primary">Chart of Accounts (COA)</h3>
+    <table class="table table-hover">
+        <thead class="table-light">
+            <tr>
+                <th>Kode</th>
+                <th>Nama Akun</th>
+                <th>Kategori</th>
+                <th>Saldo Normal</th>
+                <th class="text-end">Saldo Saat Ini</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in coa_list %}
+            <tr>
+                <td><b>{{ row.kode_akun }}</b></td>
+                <td>{{ row.nama_akun }}</td>
+                <td><span class="badge bg-secondary">{{ row.kategori }}</span></td>
+                <td>{{ row.saldo_normal }}</td>
+                <td class="text-end fw-bold">Rp {{ "{:,.0f}".format(row.saldo_akhir) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

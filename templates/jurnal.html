@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card p-4">
+            <h3 class="text-bb mb-4">Input Jurnal Umum</h3>
+            <form method="POST">
+                <div class="mb-3">
+                    <label>Tanggal</label>
+                    <input type="date" name="tanggal" class="form-control" value="{{ today }}" required>
+                </div>
+                <div class="mb-3">
+                    <label>Deskripsi Transaksi</label>
+                    <input type="text" name="deskripsi" class="form-control" placeholder="Contoh: Pendapatan Sewa Taksi" required>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label>Akun DEBIT</label>
+                        <select name="akun_debit" class="form-select" required>
+                            {% for akun in akun_list %}
+                            <option value="{{ akun.kode_akun }}">{{ akun.kode_akun }} - {{ akun.nama_akun }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label>Akun KREDIT</label>
+                        <select name="akun_kredit" class="form-select" required>
+                            <option selected disabled>Pilih Akun...</option>
+                            {% for akun in akun_list %}
+                            <option value="{{ akun.kode_akun }}">{{ akun.kode_akun }} - {{ akun.nama_akun }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label>Nominal (Rp)</label>
+                    <input type="number" name="nominal" class="form-control" placeholder="0" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 py-2">POSTING JURNAL</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

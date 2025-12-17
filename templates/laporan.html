@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2 class="mb-4 pb-2 border-bottom">Laporan Keuangan Konsolidasian</h2>
+
+<div class="card mb-5 shadow-sm">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">1. Laporan Laba Rugi</h5>
+    </div>
+    <div class="card-body">
+        <table class="table table-borderless">
+            <tr>
+                <td>Total Pendapatan</td>
+                <td class="text-end text-success fw-bold">Rp {{ "{:,.0f}".format(pdpt) }}</td>
+            </tr>
+            <tr>
+                <td>Total Beban</td>
+                <td class="text-end text-danger fw-bold">(Rp {{ "{:,.0f}".format(beban) }})</td>
+            </tr>
+            <tr class="border-top border-2">
+                <td class="fw-bold">LABA BERSIH PERIODE BERJALAN</td>
+                <td class="text-end fw-bold fs-5">Rp {{ "{:,.0f}".format(laba) }}</td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<div class="card mb-5 shadow-sm">
+    <div class="card-header bg-dark text-white">
+        <h5 class="mb-0">2. Laporan Posisi Keuangan</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6 border-end">
+                <h6 class="fw-bold text-decoration-underline mb-3">ASET</h6>
+                <ul class="list-group list-group-flush mb-3">
+                    {% for a in aset %}
+                    <li class="list-group-item d-flex justify-content-between border-0 py-1">
+                        <span>{{ a.nama_akun }}</span>
+                        <span>{{ "{:,.0f}".format(a.val) }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                <div class="alert alert-secondary py-2 d-flex justify-content-between fw-bold">
+                    <span>TOTAL ASET</span>
+                    <span>Rp {{ "{:,.0f}".format(t_aset) }}</span>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <h6 class="fw-bold text-decoration-underline mb-3">LIABILITAS & EKUITAS</h6>
+                <ul class="list-group list-group-flush mb-3">
+                    {% for l in liabilitas %}
+                    <li class="list-group-item d-flex justify-content-between border-0 py-1">
+                        <span>{{ l.nama_akun }}</span>
+                        <span>{{ "{:,.0f}".format(l.val) }}</span>
+                    </li>
+                    {% endfor %}
+                    <hr>
+                    {% for e in ekuitas %}
+                    <li class="list-group-item d-flex justify-content-between border-0 py-1">
+                        <span>{{ e.nama_akun }}</span>
+                        <span>{{ "{:,.0f}".format(e.val) }}</span>
+                    </li>
+                    {% endfor %}
+                    <li class="list-group-item d-flex justify-content-between border-0 py-1 text-success fst-italic">
+                        <span>Laba Tahun Berjalan</span>
+                        <span>{{ "{:,.0f}".format(laba) }}</span>
+                    </li>
+                </ul>
+                <div class="alert alert-secondary py-2 d-flex justify-content-between fw-bold">
+                    <span>TOTAL PASIVA</span>
+                    {% set t_liab = namespace(value=0) %}
+                    {% for l in liabilitas %}{% set t_liab.value = t_liab.value + l.val %}{% endfor %}
+                    {% set t_ek = namespace(value=0) %}
+                    {% for e in ekuitas %}{% set t_ek.value = t_ek.value + e.val %}{% endfor %}
+                    <span>Rp {{ "{:,.0f}".format(t_liab.value + t_ek.value + laba) }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-5 shadow-sm">
+    <div class="card-header bg-warning text-dark">
+        <h5 class="mb-0">3. Laporan Perubahan Ekuitas</h5>
+    </div>
+    <div class="card-body">
+        <table class="table">
+            {% for e in ekuitas %}
+            <tr>
+                <td>{{ e.nama_akun }}</td>
+                <td class="text-end">{{ "{:,.0f}".format(e.val) }}</td>
+            </tr>
+            {% endfor %}
+            <tr>
+                <td>(+) Laba Bersih</td>
+                <td class="text-end">{{ "{:,.0f}".format(laba) }}</td>
+            </tr>
+            <tr class="fw-bold bg-light">
+                <td>EKUITAS AKHIR</td>
+                <td class="text-end">Rp {{ "{:,.0f}".format(t_ek.value + laba) }}</td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<div class="card mb-5 shadow-sm">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0">4. Laporan Arus Kas (Langsung)</h5>
+    </div>
+    <div class="card-body">
+        <p class="text-muted small">Mencatat seluruh mutasi pada akun Kas dan Setara Kas.</p>
+        <table class="table table-sm table-striped">
+            <thead>
+                <tr>
+                    <th>Tanggal</th>
+                    <th>Aktivitas</th>
+                    <th class="text-end">Aliran Masuk/(Keluar)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in arus_kas %}
+                <tr>
+                    <td>{{ row.tanggal }}</td>
+                    <td>{{ row.deskripsi }}</td>
+                    <td class="text-end {{ 'text-success' if row.aliran > 0 else 'text-danger' }}">
+                        {{ "{:,.0f}".format(row.aliran) }}
+                    </td>
+                </tr>
+                {% endfor %}
+                <tr class="table-dark fw-bold">
+                    <td colspan="2">SALDO KAS AKHIR</td>
+                    <td class="text-end">Rp {{ "{:,.0f}".format(kas_akhir) }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

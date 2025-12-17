@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card p-4">
+    <h3 class="mb-4">Buku Besar (General Ledger)</h3>
+    
+    <form action="/bukubesar" method="GET" class="row g-3 mb-4 align-items-end">
+        <div class="col-auto">
+            <label class="form-label">Pilih Akun</label>
+            <select name="akun" class="form-select" style="width: 300px;">
+                {% for a in akun_list %}
+                <option value="{{ a.kode_akun }}" {% if selected == a.kode_akun %}selected{% endif %}>
+                    {{ a.kode_akun }} - {{ a.nama_akun }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">Lihat Transaksi</button>
+        </div>
+    </form>
+
+    {% if selected %}
+    <table class="table table-bordered">
+        <thead>
+            <tr class="table-primary">
+                <th>Tanggal</th>
+                <th>Keterangan</th>
+                <th class="text-end">Debit</th>
+                <th class="text-end">Kredit</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for t in transaksi %}
+            <tr>
+                <td>{{ t.tanggal }}</td>
+                <td>{{ t.deskripsi }}</td>
+                <td class="text-end text-success">{{ "{:,.0f}".format(t.debit) if t.debit > 0 else '-' }}</td>
+                <td class="text-end text-danger">{{ "{:,.0f}".format(t.kredit) if t.kredit > 0 else '-' }}</td>
+            </tr>
+            {% endfor %}
+            {% if not transaksi %}
+            <tr><td colspan="4" class="text-center">Belum ada transaksi.</td></tr>
+            {% endif %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="alert alert-info">Silakan pilih akun untuk melihat rincian buku besar.</div>
+    {% endif %}
+</div>
+{% endblock %}
