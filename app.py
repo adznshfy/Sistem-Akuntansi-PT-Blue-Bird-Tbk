@@ -21,12 +21,21 @@ def dashboard():
     conn = get_db()
     cur = conn.cursor(dictionary=True)
     
+    # 1. Hitung Total Debit & Kredit
     cur.execute("SELECT SUM(debit) as d, SUM(kredit) as k FROM jurnal")
     res = cur.fetchone()
     t_debit = res['d'] or 0
     t_kredit = res['k'] or 0
+
+    # 2. Hitung Total Akun (COA) -- BARU
+    cur.execute("SELECT COUNT(*) as total FROM coa")
+    t_akun = cur.fetchone()['total']
+
+    # 3. Hitung Total Baris Transaksi -- BARU
+    cur.execute("SELECT COUNT(*) as total FROM jurnal")
+    t_transaksi = cur.fetchone()['total']
     
-    # Data Grafik
+    # 4. Data Grafik Bar (Pendapatan vs Beban)
     cur.execute("SELECT c.kategori, SUM(j.kredit - j.debit) as val FROM coa c JOIN jurnal j ON c.kode_akun=j.kode_akun WHERE c.kategori='Pendapatan' GROUP BY c.kategori")
     pdpt = cur.fetchone()
     val_pdpt = pdpt['val'] if pdpt else 0
@@ -35,17 +44,20 @@ def dashboard():
     beban = cur.fetchone()
     val_beban = beban['val'] if beban else 0
     
-    # Pie Chart
+    # 5. Data Grafik Pie
     cur.execute("SELECT c.nama_akun, SUM(j.debit - j.kredit) as val FROM coa c JOIN jurnal j ON c.kode_akun=j.kode_akun WHERE c.kategori='Beban' GROUP BY c.nama_akun")
     pie_data = cur.fetchall()
     
-    # Line Chart (Arus Kas)
+    # 6. Data Grafik Line
     cur.execute("SELECT tanggal, SUM(debit - kredit) as flow FROM jurnal WHERE kode_akun='1100' GROUP BY tanggal ORDER BY tanggal LIMIT 7")
     line_data = cur.fetchall()
     
     conn.close()
+    
+    # Jangan lupa kirim t_akun dan t_transaksi ke template
     return render_template('dashboard.html', 
                            t_debit=t_debit, t_kredit=t_kredit,
+                           t_akun=t_akun, t_transaksi=t_transaksi, # <-- Kirim disini
                            bar_data=[float(val_pdpt), float(val_beban)],
                            pie_labels=json.dumps([r['nama_akun'] for r in pie_data]), 
                            pie_values=json.dumps([float(r['val']) for r in pie_data]),
