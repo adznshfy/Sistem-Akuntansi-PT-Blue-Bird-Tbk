@@ -1,41 +1,309 @@
 {% extends 'base.html' %}
+
 {% block content %}
-<div class="card">
-    <div class="card-header">
-        <i class="fa-solid fa-folder-tree me-2"></i> Chart of Accounts (COA)
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold text-dark mb-0">Master Data Akun</h3>
+        <p class="text-muted mb-0">Kelola Chart of Accounts (COA)</p>
     </div>
-    <div class="card-body p-0">
-        <table class="table table-hover mb-0">
-            <thead>
-                <tr>
-                    <th class="ps-4">Kode</th>
-                    <th>Nama Akun</th>
-                    <th>Kategori</th>
-                    <th>Posisi Normal</th>
-                    <th class="text-end pe-4">Saldo Terkini</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for row in coa_list %}
-                <tr>
-                    <td class="ps-4 fw-bold text-primary">{{ row.kode_akun }}</td>
-                    <td>{{ row.nama_akun }}</td>
-                    <td>
-                        <span class="badge 
-                        {% if row.kategori == 'Aset' %}bg-success
-                        {% elif row.kategori == 'Liabilitas' %}bg-warning text-dark
-                        {% elif row.kategori == 'Ekuitas' %}bg-info text-dark
-                        {% elif row.kategori == 'Pendapatan' %}bg-primary
-                        {% else %}bg-danger{% endif %}">
-                        {{ row.kategori }}
-                        </span>
-                    </td>
-                    <td><span class="text-muted small text-uppercase">{{ row.saldo_normal }}</span></td>
-                    <td class="text-end pe-4 fw-bold fs-6">Rp {{ "{:,.0f}".format(row.saldo_akhir) }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <button class="btn btn-primary px-4 py-2 fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#modalTambah">
+        <i class="fas fa-plus me-2"></i> Tambah Akun Baru
+    </button>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4 col-lg-3">
+        <div class="card bg-primary text-white border-0 shadow-sm h-100 rounded-3 position-relative overflow-hidden">
+            <div class="card-body d-flex align-items-center justify-content-between p-4">
+                <div>
+                    <h6 class="text-white-50 text-uppercase fw-bold mb-1" style="font-size: 0.8rem;">Total Akun</h6>
+                    <h2 class="fw-bold mb-0">{{ coa_list|length }} <span class="fs-6 fw-normal">Akun</span></h2>
+                </div>
+                <div class="opacity-25">
+                    <i class="fas fa-list-ul fa-3x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8 col-lg-9">
+        <div class="card border-0 shadow-sm h-100 rounded-3">
+            <div class="card-body p-3 d-flex align-items-center">
+                <div class="input-group input-group-lg w-100">
+                    <span class="input-group-text bg-white border-end-0 ps-3">
+                        <i class="fas fa-search text-muted"></i>
+                    </span>
+                    <input type="text" id="searchInput" class="form-control border-start-0 fs-6" placeholder="Cari Kode atau Nama Akun..." onkeyup="searchTable()">
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+
+<div class="card border-0 shadow-sm rounded-3">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="coaTable">
+                <thead class="bg-light">
+                    <tr class="text-secondary text-uppercase" style="font-size: 0.85rem; letter-spacing: 0.5px;">
+                        <th class="py-3 ps-4 border-bottom-0">Kode</th>
+                        <th class="py-3 border-bottom-0">Nama Akun</th>
+                        <th class="py-3 border-bottom-0">Kategori</th>
+                        <th class="py-3 border-bottom-0 text-center">Posisi Normal</th>
+                        <th class="py-3 border-bottom-0 text-end">Saldo Akhir</th>
+                        <th class="py-3 border-bottom-0 text-center pe-4">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for akun in coa_list %}
+                    <tr>
+                        <td class="ps-4 fw-bold text-primary">{{ akun.kode_akun }}</td>
+                        
+                        <td class="fw-medium text-dark">{{ akun.nama_akun }}</td>
+                        
+                        <td>
+                            {% if akun.kategori == 'Aset' %}
+                                <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 border border-success border-opacity-25">Aset</span>
+                            {% elif akun.kategori == 'Liabilitas' %}
+                                <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill px-3 border border-warning border-opacity-25">Liabilitas</span>
+                            {% elif akun.kategori == 'Ekuitas' %}
+                                <span class="badge bg-info bg-opacity-10 text-info rounded-pill px-3 border border-info border-opacity-25">Ekuitas</span>
+                            {% elif akun.kategori == 'Pendapatan' %}
+                                <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 border border-primary border-opacity-25">Pendapatan</span>
+                            {% elif akun.kategori == 'Beban' %}
+                                <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3 border border-danger border-opacity-25">Beban</span>
+                            {% else %}
+                                <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-3">{{ akun.kategori }}</span>
+                            {% endif %}
+                        </td>
+
+                        <td class="text-center">
+                            {% if akun.saldo_normal == 'Debit' %}
+                                <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-2 border border-primary border-opacity-10">
+                                    <i class="fas fa-arrow-up me-1 small"></i> Debit
+                                </span>
+                            {% else %}
+                                <span class="badge bg-warning bg-opacity-10 text-dark px-3 py-2 rounded-2 border border-warning border-opacity-10">
+                                    <i class="fas fa-arrow-down me-1 small"></i> Kredit
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <td class="text-end fw-bold text-dark">
+                            Rp {{ "{:,.0f}".format(akun.saldo_akhir|default(0)).replace(',', '.') }}
+                        </td>
+
+                        <td class="text-center pe-4">
+                            <div class="btn-group">
+                                <button class="btn btn-sm btn-light text-primary" title="Edit"
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#modalEdit"
+                                        onclick="isiModalEdit('{{ akun.kode_akun }}', '{{ akun.nama_akun }}', '{{ akun.kategori }}', '{{ akun.saldo_normal }}', '{{ akun.sub_kategori }}')">
+                                    <i class="fas fa-pencil-alt"></i>
+                                </button>
+                                
+                                <form action="{{ url_for('hapus_akun', kode=akun.kode_akun) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus akun {{ akun.nama_akun }}?');">
+                                    <button type="submit" class="btn btn-sm btn-light text-danger" title="Hapus">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalTambah" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold">Tambah Akun Baru</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('tambah_akun') }}" method="POST">
+                <div class="modal-body">
+                    <div class="alert alert-info py-2 small border-0 bg-primary bg-opacity-10 text-primary">
+                        <i class="fas fa-info-circle me-1"></i> <b>Penting:</b> Sub Kategori wajib diisi agar Laporan Keuangan otomatis.
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Kode Akun</label>
+                        <input type="text" name="kode_akun" class="form-control" placeholder="Cth: 5105" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Nama Akun</label>
+                        <input type="text" name="nama_akun" class="form-control" placeholder="Cth: Beban Iklan" required>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label">Kategori</label>
+                            <select name="kategori" class="form-select" required>
+                                <option value="Aset">Aset</option>
+                                <option value="Liabilitas">Liabilitas</option>
+                                <option value="Ekuitas">Ekuitas</option>
+                                <option value="Pendapatan">Pendapatan</option>
+                                <option value="Beban">Beban</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Saldo Normal</label>
+                            <select name="saldo_normal" class="form-select" required>
+                                <option value="Debit">Debit</option>
+                                <option value="Kredit">Kredit</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-primary">Sub Kategori (Posisi Laporan)</label>
+                        <select name="sub_kategori" class="form-select" required>
+                            <option value="">-- Pilih Posisi --</option>
+                            
+                            <optgroup label="Neraca - Aset">
+                                <option value="Aset Lancar">Aset Lancar (Current Assets)</option>
+                                <option value="Aset Tidak Lancar">Aset Tidak Lancar (Fixed Assets)</option>
+                            </optgroup>
+                            <optgroup label="Neraca - Liabilitas & Ekuitas">
+                                <option value="Liabilitas Jangka Pendek">Liabilitas Jangka Pendek</option>
+                                <option value="Liabilitas Jangka Panjang">Liabilitas Jangka Panjang</option>
+                                <option value="Ekuitas">Ekuitas / Modal</option>
+                            </optgroup>
+
+                            <optgroup label="Laba Rugi">
+                                <option value="Pendapatan Usaha">Pendapatan Usaha (Revenue)</option>
+                                <option value="Beban Langsung">Beban Langsung (Direct Cost)</option>
+                                <option value="Beban Operasional">Beban Operasional (Op. Expense)</option>
+                                <option value="Pendapatan Lain-lain">Pendapatan Lain-lain</option>
+                                <option value="Beban Lain-lain">Beban Lain-lain</option>
+                                <option value="Beban Pajak">Beban Pajak</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalEdit" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title fw-bold">Edit Akun</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('edit_akun') }}" method="POST">
+                <div class="modal-body">
+                    <input type="hidden" name="kode_akun_lama" id="edit_kode_lama">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Kode Akun (Tidak dapat diubah)</label>
+                        <input type="text" id="edit_kode_display" class="form-control bg-light" disabled>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Nama Akun</label>
+                        <input type="text" name="nama_akun" id="edit_nama" class="form-control" required>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label">Kategori</label>
+                            <select name="kategori" id="edit_kategori" class="form-select" required>
+                                <option value="Aset">Aset</option>
+                                <option value="Liabilitas">Liabilitas</option>
+                                <option value="Ekuitas">Ekuitas</option>
+                                <option value="Pendapatan">Pendapatan</option>
+                                <option value="Beban">Beban</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Saldo Normal</label>
+                            <select name="saldo_normal" id="edit_saldo" class="form-select" required>
+                                <option value="Debit">Debit</option>
+                                <option value="Kredit">Kredit</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-primary">Sub Kategori (Posisi Laporan)</label>
+                        <select name="sub_kategori" id="edit_sub" class="form-select" required>
+                            <optgroup label="Neraca - Aset">
+                                <option value="Aset Lancar">Aset Lancar (Current Assets)</option>
+                                <option value="Aset Tidak Lancar">Aset Tidak Lancar (Fixed Assets)</option>
+                            </optgroup>
+                            <optgroup label="Neraca - Liabilitas & Ekuitas">
+                                <option value="Liabilitas Jangka Pendek">Liabilitas Jangka Pendek</option>
+                                <option value="Liabilitas Jangka Panjang">Liabilitas Jangka Panjang</option>
+                                <option value="Ekuitas">Ekuitas / Modal</option>
+                            </optgroup>
+
+                            <optgroup label="Laba Rugi">
+                                <option value="Pendapatan Usaha">Pendapatan Usaha</option>
+                                <option value="Beban Langsung">Beban Langsung</option>
+                                <option value="Beban Operasional">Beban Operasional</option>
+                                <option value="Pendapatan Lain-lain">Pendapatan Lain-lain</option>
+                                <option value="Beban Lain-lain">Beban Lain-lain</option>
+                                <option value="Beban Pajak">Beban Pajak</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-warning">Update Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 1. Fungsi Pencarian Cepat
+    function searchTable() {
+        var input, filter, table, tr, td, i;
+        input = document.getElementById("searchInput");
+        filter = input.value.toUpperCase();
+        table = document.getElementById("coaTable");
+        tr = table.getElementsByTagName("tr");
+
+        for (i = 1; i < tr.length; i++) { // Skip header (baris 0)
+            tdKode = tr[i].getElementsByTagName("td")[0];
+            tdNama = tr[i].getElementsByTagName("td")[1];
+            
+            if (tdKode || tdNama) {
+                txtValueKode = tdKode.textContent || tdKode.innerText;
+                txtValueNama = tdNama.textContent || tdNama.innerText;
+                
+                if (txtValueKode.toUpperCase().indexOf(filter) > -1 || txtValueNama.toUpperCase().indexOf(filter) > -1) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }       
+        }
+    }
+
+    // 2. Fungsi Isi Modal Edit
+    function isiModalEdit(kode, nama, kategori, saldo, sub) {
+        document.getElementById('edit_kode_lama').value = kode;
+        document.getElementById('edit_kode_display').value = kode;
+        document.getElementById('edit_nama').value = nama;
+        document.getElementById('edit_kategori').value = kategori;
+        document.getElementById('edit_saldo').value = saldo;
+        
+        // Handle jika sub kategori kosong/None
+        if (sub && sub !== 'None' && sub !== '') {
+            document.getElementById('edit_sub').value = sub;
+        } else {
+            // Jika kosong, set ke default
+            document.getElementById('edit_sub').value = ''; 
+        }
+    }
+</script>
+
 {% endblock %}

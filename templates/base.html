@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blue Bird Finance System</title>
+    <title>SIA - PT Blue Bird Tbk</title>
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -23,8 +24,8 @@
             overflow-x: hidden;
         }
 
-        /* SIDEBAR STYLE */
-        .sidebar {
+        /* --- 1. SIDEBAR STYLE --- */
+        #sidebar {
             width: var(--sidebar-width);
             height: 100vh;
             position: fixed;
@@ -32,30 +33,53 @@
             left: 0;
             background: linear-gradient(180deg, var(--bb-blue) 0%, var(--bb-dark) 100%);
             color: white;
-            padding-top: 20px;
-            z-index: 1000;
-            overflow-y: auto;
+            z-index: 1001; /* Z-Index ditingkatkan agar di atas overlay */
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s cubic-bezier(0.77, 0.2, 0.05, 1.0); /* Animasi lebih halus */
         }
 
-        /* BAGIAN LOGO & BRAND */
+        /* Bagian Logo */
         .sidebar-brand {
-            padding: 0 20px 20px;
-            font-size: 22px;
+            padding: 25px 20px;
+            font-size: 20px;
             font-weight: 700;
             border-bottom: 1px solid rgba(255,255,255,0.1);
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 12px; /* Jarak antara logo dan tulisan */
+            display: flex; align-items: center; justify-content: space-between;
+            flex-shrink: 0;
         }
+        
+        .brand-content { display: flex; align-items: center; gap: 12px; }
+        .brand-content img { height: 35px; width: auto; background: white; padding: 4px; border-radius: 6px; }
 
-        /* Styling agar logo rapi */
-        .sidebar-brand img {
-            height: 40px;       /* Tinggi logo pas */
-            width: auto;        /* Lebar menyesuaikan */
-            background: white;  /* Kotak putih di belakang logo agar kontras */
-            padding: 5px;
-            border-radius: 8px; /* Sudut tumpul */
+        /* Tombol Close di Sidebar (Hanya HP/Tab) */
+        #dismiss { 
+            cursor: pointer; 
+            color: white; 
+            display: none; 
+            background: rgba(255,255,255,0.1);
+            width: 35px; height: 35px;
+            text-align: center;
+            line-height: 35px;
+            border-radius: 5px;
+        }
+        #dismiss:hover { background: rgba(255,255,255,0.3); }
+
+        /* Menu Scrollable */
+        .sidebar-menu {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding-top: 20px;
+        }
+        .sidebar-menu::-webkit-scrollbar { width: 4px; }
+        .sidebar-menu::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+
+        /* Footer Profile (Nama Kelompok) */
+        .sidebar-footer {
+            padding: 20px;
+            background: rgba(0,0,0,0.1);
+            border-top: 1px solid rgba(255,255,255,0.1);
+            flex-shrink: 0; /* Mencegah footer gepeng */
         }
 
         .nav-link {
@@ -66,47 +90,110 @@
             transition: all 0.2s;
             border-right: 4px solid transparent;
         }
-
-        .nav-link:hover {
-            color: white;
-            background-color: rgba(255,255,255,0.1);
-        }
-
-        .nav-link.active {
+        .nav-link:hover, .nav-link.active {
             color: white;
             background-color: rgba(255,255,255,0.15);
             border-right: 4px solid #fff;
             font-weight: 600;
         }
-
-        .nav-submenu .nav-link {
-            padding-left: 55px;
-            font-size: 13px;
-        }
-        
+        .nav-submenu .nav-link { padding-left: 55px; font-size: 13px; }
         .chevron-icon { transition: transform 0.3s; }
         .nav-link[aria-expanded="true"] .chevron-icon { transform: rotate(180deg); }
 
-        .main-content {
+        /* --- 2. MAIN CONTENT STYLE --- */
+        #content {
             margin-left: var(--sidebar-width);
             padding: 30px;
             min-height: 100vh;
+            transition: all 0.3s;
         }
-
+        
         .card { background: white; border: none; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 25px; }
         .card-header { background: white; border-bottom: 1px solid #eee; padding: 20px 25px; font-weight: 600; color: var(--bb-blue); border-radius: 12px 12px 0 0 !important; }
         .card-body { padding: 25px; }
+
+        /* --- 3. MOBILE & TABLET RESPONSIVE LOGIC --- */
+        .mobile-header {
+            display: none;
+            background: white;
+            padding: 15px 25px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 900;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.6);
+            z-index: 998;
+            opacity: 0;
+            transition: all 0.5s ease-in-out;
+        }
+        .overlay.active { display: block; opacity: 1; }
+
+        /* BREAKPOINT TABLET & MOBILE (Max 991px = iPad/Tablet & HP) */
+        @media (max-width: 991px) {
+            #sidebar {
+                margin-left: calc(var(--sidebar-width) * -1); /* Sembunyi ke kiri */
+                box-shadow: 5px 0 15px rgba(0,0,0,0.1);
+            }
+            #sidebar.active {
+                margin-left: 0; /* Muncul */
+            }
+            #content {
+                margin-left: 0; 
+                padding: 20px; /* Padding sedikit lebih kecil */
+            }
+            .mobile-header {
+                display: flex; /* Munculkan header hamburger */
+            }
+            #dismiss {
+                display: block; /* Munculkan tombol X */
+            }
+            
+            /* SAYA SUDAH MENGHAPUS 'display: none' PADA SIDEBAR-FOOTER */
+            /* Jadi nama kelompok akan tetap muncul sekarang */
+        }
+        
+        /* Fix Khusus Print */
+        @media print {
+            #sidebar, .mobile-header, .no-print { display: none !important; }
+            #content { margin-left: 0 !important; padding: 0 !important; width: 100% !important; }
+            body, html { background: white; width: 100%; margin: 0; }
+        }
     </style>
 </head>
 <body>
 
-    <nav class="sidebar">
+    <div class="overlay"></div>
+
+    <div class="mobile-header d-lg-none">
+        <button type="button" id="sidebarCollapse" class="btn btn-primary btn-sm px-3">
+            <i class="fas fa-bars me-2"></i> Menu
+        </button>
+        <span class="fw-bold text-primary" style="font-size: 16px;">PT BLUE BIRD TBK</span>
+    </div>
+
+    <nav id="sidebar">
         <div class="sidebar-brand">
-            <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo BB">
-            <span>BLUE BIRD</span>
+            <div class="brand-content">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo">
+                <div style="line-height: 1.2;">
+                    <span class="d-block">BLUE BIRD</span>
+                    <small style="font-size: 10px; font-weight: 400; opacity: 0.8;">FINANCE SYSTEM</small>
+                </div>
+            </div>
+            <div id="dismiss">
+                <i class="fas fa-times"></i>
+            </div>
         </div>
         
-        <div class="nav flex-column">
+        <div class="sidebar-menu nav flex-column">
             <a class="nav-link {{ 'active' if request.path == '/dashboard' or request.path == '/' }}" href="/dashboard">
                 <i class="fa-solid fa-chart-line"></i> Dashboard
             </a>
@@ -129,14 +216,10 @@
             
             {% set is_laporan = request.path.startswith('/laporan') %}
             <a class="nav-link d-flex justify-content-between align-items-center {{ '' if is_laporan else 'collapsed' }}" 
-               data-bs-toggle="collapse" 
-               href="#submenuLaporan" 
-               role="button" 
-               aria-expanded="{{ 'true' if is_laporan else 'false' }}">
+               data-bs-toggle="collapse" href="#submenuLaporan" role="button" aria-expanded="{{ 'true' if is_laporan else 'false' }}">
                 <span><i class="fa-solid fa-file-invoice-dollar"></i> Laporan</span>
                 <i class="fa-solid fa-chevron-down small chevron-icon"></i>
             </a>
-            
             <div class="collapse {{ 'show' if is_laporan else '' }}" id="submenuLaporan">
                 <nav class="nav flex-column nav-submenu bg-dark bg-opacity-25 py-2">
                     <a class="nav-link {{ 'active' if request.path == '/laporan/labarugi' }}" href="/laporan/labarugi">1. Laba Rugi</a>
@@ -146,9 +229,27 @@
                 </nav>
             </div>
         </div>
+
+        <div class="mt-auto"> 
+            <a class="nav-link {{ 'active' if request.path == '/about' }}" href="/about">
+                <i class="fa-solid fa-circle-info"></i> About & Resources
+            </a>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="d-flex align-items-center bg-white bg-opacity-10 p-2 rounded">
+                <div class="bg-white text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 35px; height: 35px; flex-shrink: 0;">
+                    <i class="fa-solid fa-user-group"></i>
+                </div>
+                <div class="text-white overflow-hidden">
+                    <span class="d-block fw-bold text-nowrap" style="font-size: 13px;">Kelompok 2</span>
+                    <small class="d-block text-white-50 text-nowrap" style="font-size: 10px;">3D Sistem Informasi</small>
+                </div>
+            </div>
+        </div>
     </nav>
 
-    <main class="main-content">
+    <main id="content">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
@@ -158,10 +259,43 @@
                 {% endfor %}
             {% endif %}
         {% endwith %}
-
+        
         {% block content %}{% endblock %}
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.querySelector('.overlay');
+            const btnOpen = document.getElementById('sidebarCollapse');
+            const btnClose = document.getElementById('dismiss');
+
+            // Logika Buka Menu
+            if(btnOpen){
+                btnOpen.addEventListener('click', function () {
+                    sidebar.classList.add('active');
+                    overlay.classList.add('active');
+                });
+            }
+
+            // Logika Tutup Menu (Klik X)
+            if(btnClose){
+                btnClose.addEventListener('click', function () {
+                    sidebar.classList.remove('active');
+                    overlay.classList.remove('active');
+                });
+            }
+
+            // Logika Tutup Menu (Klik Background Gelap)
+            if(overlay){
+                overlay.addEventListener('click', function () {
+                    sidebar.classList.remove('active');
+                    overlay.classList.remove('active');
+                });
+            }
+        });
+    </script>
 </body>
 </html>

@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block title %}About Us{% endblock %}
+
+{% block content %}
+<style>
+    /* Styling Khusus About Us */
+    .about-header {
+        background: linear-gradient(135deg, #005eb8 0%, #00a1e0 100%);
+        color: white;
+        border-radius: 15px;
+        padding: 40px 20px;
+        text-align: center;
+        margin-bottom: 40px;
+        box-shadow: 0 10px 20px rgba(0, 94, 184, 0.15);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .about-header::before {
+        content: '';
+        position: absolute;
+        top: -50px; right: -50px;
+        width: 200px; height: 200px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+    }
+    .about-header::after {
+        content: '';
+        position: absolute;
+        bottom: -30px; left: -30px;
+        width: 120px; height: 120px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+    }
+
+    .member-card {
+        background: white;
+        border-radius: 15px;
+        padding: 30px 20px;
+        text-align: center;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        height: 100%;
+        border: 1px solid #f0f0f0;
+    }
+
+    .member-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+        border-color: #005eb8;
+    }
+
+    .avatar-circle {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 32px;
+        font-weight: bold;
+        color: white;
+        margin: 0 auto 20px auto;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .bg-red { background: #e74c3c; }
+    .bg-green { background: #27ae60; }
+    .bg-orange { background: #f39c12; }
+    .bg-blue { background: #3498db; }
+
+    .role-badge {
+        display: inline-block;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        margin-top: 15px;
+        background-color: #f8f9fa;
+        color: #555;
+        border: 1px solid #eee;
+    }
+
+    .modul-card {
+        background: #2c3e50;
+        color: white;
+        border-radius: 15px;
+        overflow: hidden;
+        height: 100%;
+        position: relative;
+    }
+</style>
+
+<div class="container-fluid px-2 px-md-4">
+    
+    <div class="about-header">
+        <h2 class="fw-bold mb-2">ABOUT US</h2>
+        <p class="mb-4 opacity-75">Tugas UAS Pengantar Akuntansi Semester Ganjil 2025/2026</p>
+        
+        <div class="d-flex justify-content-center gap-2 flex-wrap position-relative" style="z-index: 2;">
+            <span class="badge bg-white text-primary px-3 py-2 rounded-pill shadow-sm">
+                <i class="fas fa-book me-1"></i> Pengantar Akuntansi
+            </span>
+            <span class="badge bg-white text-primary px-3 py-2 rounded-pill shadow-sm">
+                <i class="fas fa-user-tie me-1"></i> Rinda Hesti Kusumaningtyas M.M.S.I.
+            </span>
+            <span class="badge bg-white text-primary px-3 py-2 rounded-pill shadow-sm">
+                <i class="fas fa-users me-1"></i> Kelas 3D
+            </span>
+        </div>
+    </div>
+
+    <h5 class="fw-bold mb-4 ps-1 border-start border-4 border-primary ps-3">Anggota Kelompok 2</h5>
+    
+    <div class="row g-4 mb-5">
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="member-card">
+                <div class="avatar-circle bg-red">
+                    <img src="{{ url_for('static', filename='JIHAAN.jpg') }}" alt="Foto Jihaan" class="rounded-circle" style="width: 100px; height: 100px; object-fit: cover;">
+                </div>
+                <h5 class="fw-bold mb-1">Jihaan Adzanishaafiya Anwar</h5>
+                <p class="text-muted small mb-0">NIM: 12409031050110</p>
+                <span class="role-badge shadow-sm">Ketua</span>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="member-card">
+                <div class="avatar-circle bg-red">
+                    <span>SA</span>
+                </div>
+                <h5 class="fw-bold mb-1">Balqis<br>Sahirah</h5>
+                <p class="text-muted small mb-0">NIM: 12409031050112</p>
+                <span class="role-badge">Anggota</span>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="member-card">
+                <div class="avatar-circle bg-green">
+                    <span>RP</span>
+                </div>
+                <h5 class="fw-bold mb-1">Muhammad Ilham<br>Furoozan Firdaus</h5>
+                <p class="text-muted small mb-0">NIM: 12409031030101</p>
+                <span class="role-badge">Anggota</span>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="member-card">
+                <div class="avatar-circle bg-orange">
+                    <span>DS</span>
+                </div>
+                <h5 class="fw-bold mb-1">Syamsul<br>Fajri</h5>
+                <p class="text-muted small mb-0">NIM: 12409031030096</p>
+                <span class="role-badge">Anggota</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        
+        <div class="col-12 col-xl-8">
+            <div class="card border-0 shadow-sm h-100 rounded-4 overflow-hidden">
+                <div class="card-header bg-white border-0 pt-4 px-4 pb-0">
+                    <h5 class="fw-bold"><i class="fas fa-search-dollar text-primary me-2"></i> Informasi Studi Kasus</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="bg-light p-3 rounded-3 text-primary">
+                            <i class="fas fa-dove fa-2x"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-1">PT Blue Bird Tbk</h5>
+                            <p class="text-muted mb-3">Analisis Laporan Keuangan Periode Q3 (September) 2025</p>
+                            <p class="text-secondary small mb-3" style="line-height: 1.6;">
+                                Sistem ini dibangun untuk melakukan simulasi pencatatan akuntansi 
+                                (Jurnal hingga Laporan Keuangan) berdasarkan data publik yang tersedia.
+                                Bertujuan untuk memenuhi tugas akhir mata kuliah Pengantar Akuntansi.
+                            </p>
+                            
+                            <a href="{{ url_for('static', filename='documents/laporan_final.pdf') }}" target="_blank" class="btn btn-outline-primary">
+                                <i class="fas fa-file-pdf me-2"></i> Lihat Laporan Lengkap
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-xl-4">
+            <div class="modul-card shadow text-center p-4 d-flex flex-column justify-content-center align-items-center">
+                <div class="mb-3 text-warning">
+                    <i class="fas fa-book-open fa-3x"></i>
+                </div>
+                <h5 class="fw-bold text-white mb-2">Modul Penggunaan</h5>
+                <p class="text-white-50 small mb-4 px-2">
+                    Panduan lengkap cara menggunakan aplikasi dari hulu ke hilir.
+                </p>
+                
+                <a href="{{ url_for('static', filename='documents/laporan_final.pdf') }}" target="_blank" class="btn btn-warning text-dark fw-bold w-100 rounded-pill">
+                    <i class="fas fa-download me-2"></i> Unduh Modul
+                </a>
+            </div>
+        </div>
+
+    </div>
+    
+    <div class="mb-5"></div>
+</div>
+{% endblock %}
