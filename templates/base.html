@@ -24,148 +24,97 @@
             overflow-x: hidden;
         }
 
-        /* --- 1. SIDEBAR STYLE --- */
-        #sidebar {
-            width: var(--sidebar-width);
-            height: 100vh;
-            position: fixed;
-            top: 0;
-            left: 0;
-            background: linear-gradient(180deg, var(--bb-blue) 0%, var(--bb-dark) 100%);
-            color: white;
-            z-index: 1001; /* Z-Index ditingkatkan agar di atas overlay */
-            display: flex;
-            flex-direction: column;
-            transition: all 0.3s cubic-bezier(0.77, 0.2, 0.05, 1.0); /* Animasi lebih halus */
+        /* --- LOGIKA ANIMASI: HANYA DEFINISI, TIDAK DI-APPLY KE BODY SECARA GLOBAL --- */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); filter: blur(5px); }
+            to { opacity: 1; transform: translateY(0); filter: blur(0); }
         }
 
-        /* Bagian Logo */
+        /* Kelas ini HANYA akan ditempel lewat Javascript jika di Dashboard */
+        .dashboard-animate {
+            opacity: 0; 
+            animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+
+        /* --- SIDEBAR STYLE --- */
+        #sidebar {
+            width: var(--sidebar-width); height: 100vh; position: fixed; top: 0; left: 0;
+            background: linear-gradient(180deg, var(--bb-blue) 0%, var(--bb-dark) 100%);
+            color: white; z-index: 1001; display: flex; flex-direction: column;
+            transition: all 0.3s cubic-bezier(0.77, 0.2, 0.05, 1.0);
+        }
+
         .sidebar-brand {
-            padding: 25px 20px;
-            font-size: 20px;
-            font-weight: 700;
+            padding: 25px 20px; font-size: 20px; font-weight: 700;
             border-bottom: 1px solid rgba(255,255,255,0.1);
-            display: flex; align-items: center; justify-content: space-between;
-            flex-shrink: 0;
+            display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
         }
         
         .brand-content { display: flex; align-items: center; gap: 12px; }
         .brand-content img { height: 35px; width: auto; background: white; padding: 4px; border-radius: 6px; }
 
-        /* Tombol Close di Sidebar (Hanya HP/Tab) */
         #dismiss { 
-            cursor: pointer; 
-            color: white; 
-            display: none; 
-            background: rgba(255,255,255,0.1);
-            width: 35px; height: 35px;
-            text-align: center;
-            line-height: 35px;
-            border-radius: 5px;
+            cursor: pointer; color: white; display: none; 
+            background: rgba(255,255,255,0.1); width: 35px; height: 35px;
+            text-align: center; line-height: 35px; border-radius: 5px;
         }
         #dismiss:hover { background: rgba(255,255,255,0.3); }
 
-        /* Menu Scrollable */
-        .sidebar-menu {
-            flex-grow: 1;
-            overflow-y: auto;
-            padding-top: 20px;
-        }
+        .sidebar-menu { flex-grow: 1; overflow-y: auto; padding-top: 20px; }
         .sidebar-menu::-webkit-scrollbar { width: 4px; }
         .sidebar-menu::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
 
-        /* Footer Profile (Nama Kelompok) */
         .sidebar-footer {
-            padding: 20px;
-            background: rgba(0,0,0,0.1);
-            border-top: 1px solid rgba(255,255,255,0.1);
-            flex-shrink: 0; /* Mencegah footer gepeng */
+            padding: 20px; background: rgba(0,0,0,0.1); border-top: 1px solid rgba(255,255,255,0.1); flex-shrink: 0;
         }
 
         .nav-link {
-            color: rgba(255,255,255,0.8);
-            padding: 12px 25px;
-            font-size: 14px;
-            display: flex; align-items: center; gap: 15px;
-            transition: all 0.2s;
-            border-right: 4px solid transparent;
+            color: rgba(255,255,255,0.8); padding: 12px 25px; font-size: 14px;
+            display: flex; align-items: center; gap: 15px; transition: all 0.2s; border-right: 4px solid transparent;
         }
         .nav-link:hover, .nav-link.active {
-            color: white;
-            background-color: rgba(255,255,255,0.15);
-            border-right: 4px solid #fff;
-            font-weight: 600;
+            color: white; background-color: rgba(255,255,255,0.15); border-right: 4px solid #fff; font-weight: 600;
         }
         .nav-submenu .nav-link { padding-left: 55px; font-size: 13px; }
         .chevron-icon { transition: transform 0.3s; }
         .nav-link[aria-expanded="true"] .chevron-icon { transform: rotate(180deg); }
 
-        /* --- 2. MAIN CONTENT STYLE --- */
-        #content {
-            margin-left: var(--sidebar-width);
-            padding: 30px;
-            min-height: 100vh;
-            transition: all 0.3s;
-        }
+        /* --- MAIN CONTENT STYLE --- */
+        #content { margin-left: var(--sidebar-width); padding: 30px; min-height: 100vh; transition: all 0.3s; }
         
         .card { background: white; border: none; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 25px; }
         .card-header { background: white; border-bottom: 1px solid #eee; padding: 20px 25px; font-weight: 600; color: var(--bb-blue); border-radius: 12px 12px 0 0 !important; }
         .card-body { padding: 25px; }
 
-        /* --- 3. MOBILE & TABLET RESPONSIVE LOGIC --- */
         .mobile-header {
-            display: none;
-            background: white;
-            padding: 15px 25px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            align-items: center;
-            justify-content: space-between;
-            position: sticky;
-            top: 0;
-            z-index: 900;
+            display: none; background: white; padding: 15px 25px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); align-items: center;
+            justify-content: space-between; position: sticky; top: 0; z-index: 900;
         }
 
         .overlay {
-            display: none;
-            position: fixed;
-            width: 100vw; height: 100vh;
-            background: rgba(0,0,0,0.6);
-            z-index: 998;
-            opacity: 0;
-            transition: all 0.5s ease-in-out;
+            display: none; position: fixed; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.6); z-index: 998; opacity: 0; transition: all 0.5s ease-in-out;
         }
         .overlay.active { display: block; opacity: 1; }
 
-        /* BREAKPOINT TABLET & MOBILE (Max 991px = iPad/Tablet & HP) */
         @media (max-width: 991px) {
-            #sidebar {
-                margin-left: calc(var(--sidebar-width) * -1); /* Sembunyi ke kiri */
-                box-shadow: 5px 0 15px rgba(0,0,0,0.1);
-            }
-            #sidebar.active {
-                margin-left: 0; /* Muncul */
-            }
-            #content {
-                margin-left: 0; 
-                padding: 20px; /* Padding sedikit lebih kecil */
-            }
-            .mobile-header {
-                display: flex; /* Munculkan header hamburger */
-            }
-            #dismiss {
-                display: block; /* Munculkan tombol X */
-            }
-            
-            /* SAYA SUDAH MENGHAPUS 'display: none' PADA SIDEBAR-FOOTER */
-            /* Jadi nama kelompok akan tetap muncul sekarang */
+            #sidebar { margin-left: calc(var(--sidebar-width) * -1); box-shadow: 5px 0 15px rgba(0,0,0,0.1); }
+            #sidebar.active { margin-left: 0; }
+            #content { margin-left: 0; padding: 20px; }
+            .mobile-header { display: flex; }
+            #dismiss { display: block; }
         }
         
-        /* Fix Khusus Print */
         @media print {
             #sidebar, .mobile-header, .no-print { display: none !important; }
             #content { margin-left: 0 !important; padding: 0 !important; width: 100% !important; }
             body, html { background: white; width: 100%; margin: 0; }
         }
+
+        /* Hover Effect Tetap Ada (Biar tombol terasa interaktif) */
+        .hover-effect { transition: all 0.3s ease !important; }
+        .hover-effect:hover { transform: translateY(-5px) !important; box-shadow: 0 10px 20px rgba(0, 94, 184, 0.15) !important; }
     </style>
 </head>
 <body>
@@ -188,28 +137,22 @@
                     <small style="font-size: 10px; font-weight: 400; opacity: 0.8;">FINANCE SYSTEM</small>
                 </div>
             </div>
-            <div id="dismiss">
-                <i class="fas fa-times"></i>
-            </div>
+            <div id="dismiss"><i class="fas fa-times"></i></div>
         </div>
         
         <div class="sidebar-menu nav flex-column">
             <a class="nav-link {{ 'active' if request.path == '/dashboard' or request.path == '/' }}" href="/dashboard">
                 <i class="fa-solid fa-chart-line"></i> Dashboard
             </a>
-            
             <a class="nav-link {{ 'active' if request.path == '/coa' }}" href="/coa">
                 <i class="fa-solid fa-folder-tree"></i> Master COA
             </a>
-            
             <a class="nav-link {{ 'active' if request.path == '/jurnal' }}" href="/jurnal">
                 <i class="fa-solid fa-pen-to-square"></i> Input Jurnal
             </a>
-            
             <a class="nav-link {{ 'active' if request.path == '/jurnal_umum' }}" href="/jurnal_umum">
                 <i class="fa-solid fa-book"></i> Jurnal Umum
             </a>
-            
             <a class="nav-link {{ 'active' if request.path == '/bukubesar' }}" href="/bukubesar">
                 <i class="fa-solid fa-layer-group"></i> Buku Besar
             </a>
@@ -267,34 +210,65 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
+            // --- LOGIKA SIDEBAR & MOBILE MENU ---
             const sidebar = document.getElementById('sidebar');
             const overlay = document.querySelector('.overlay');
             const btnOpen = document.getElementById('sidebarCollapse');
             const btnClose = document.getElementById('dismiss');
 
-            // Logika Buka Menu
             if(btnOpen){
                 btnOpen.addEventListener('click', function () {
                     sidebar.classList.add('active');
                     overlay.classList.add('active');
                 });
             }
-
-            // Logika Tutup Menu (Klik X)
             if(btnClose){
                 btnClose.addEventListener('click', function () {
                     sidebar.classList.remove('active');
                     overlay.classList.remove('active');
                 });
             }
-
-            // Logika Tutup Menu (Klik Background Gelap)
             if(overlay){
                 overlay.addEventListener('click', function () {
                     sidebar.classList.remove('active');
                     overlay.classList.remove('active');
                 });
             }
+
+            // --- [LOGIKA ANIMASI] ---
+            // Hanya aktif jika URL adalah root (/) atau /dashboard
+            const path = window.location.pathname;
+            const isDashboard = path === '/' || path.includes('/dashboard');
+
+            if (isDashboard) {
+                // 1. Pilih elemen di Dashboard untuk dianimasikan
+                const elements = document.querySelectorAll('.card, .table-responsive, canvas, .alert');
+                
+                elements.forEach((el, index) => {
+                    el.classList.add('dashboard-animate');
+                    // Delay bertingkat (stagger) biar keren
+                    const delay = Math.min(index * 0.1, 1.0); 
+                    el.style.animationDelay = `${delay}s`;
+                });
+
+                // 2. Efek Angka Berjalan (Counter) khusus Dashboard
+                const numbers = document.querySelectorAll('h5.fw-bold, h2.fw-bold');
+                numbers.forEach(num => {
+                    if(num.innerText.includes(',') || num.innerText.includes('.')) {
+                        num.style.transition = "transform 0.5s ease-out, opacity 0.5s";
+                        num.style.opacity = 0;
+                        num.style.transform = "scale(0.9)";
+                        
+                        setTimeout(() => {
+                            num.style.opacity = 1;
+                            num.style.transform = "scale(1)";
+                        }, 200);
+                    }
+                });
+            }
+            // JIKA BUKAN DASHBOARD (Buku Besar, Jurnal, dll):
+            // Script ini TIDAK melakukan apa-apa.
+            // Halaman akan loading normal (instan) tanpa animasi apapun.
         });
     </script>
 </body>

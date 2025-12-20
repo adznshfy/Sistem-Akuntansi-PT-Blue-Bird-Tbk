@@ -55,62 +55,72 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for akun in coa_list %}
-                    <tr>
-                        <td class="ps-4 fw-bold text-primary">{{ akun.kode_akun }}</td>
-                        
-                        <td class="fw-medium text-dark">{{ akun.nama_akun }}</td>
-                        
-                        <td>
-                            {% if akun.kategori == 'Aset' %}
-                                <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 border border-success border-opacity-25">Aset</span>
-                            {% elif akun.kategori == 'Liabilitas' %}
-                                <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill px-3 border border-warning border-opacity-25">Liabilitas</span>
-                            {% elif akun.kategori == 'Ekuitas' %}
-                                <span class="badge bg-info bg-opacity-10 text-info rounded-pill px-3 border border-info border-opacity-25">Ekuitas</span>
-                            {% elif akun.kategori == 'Pendapatan' %}
-                                <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 border border-primary border-opacity-25">Pendapatan</span>
-                            {% elif akun.kategori == 'Beban' %}
-                                <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3 border border-danger border-opacity-25">Beban</span>
-                            {% else %}
-                                <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-3">{{ akun.kategori }}</span>
-                            {% endif %}
-                        </td>
-
-                        <td class="text-center">
-                            {% if akun.saldo_normal == 'Debit' %}
-                                <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-2 border border-primary border-opacity-10">
-                                    <i class="fas fa-arrow-up me-1 small"></i> Debit
-                                </span>
-                            {% else %}
-                                <span class="badge bg-warning bg-opacity-10 text-dark px-3 py-2 rounded-2 border border-warning border-opacity-10">
-                                    <i class="fas fa-arrow-down me-1 small"></i> Kredit
-                                </span>
-                            {% endif %}
-                        </td>
-
-                        <td class="text-end fw-bold text-dark">
-                            Rp {{ "{:,.0f}".format(akun.saldo_akhir|default(0)).replace(',', '.') }}
-                        </td>
-
-                        <td class="text-center pe-4">
-                            <div class="btn-group">
-                                <button class="btn btn-sm btn-light text-primary" title="Edit"
-                                        data-bs-toggle="modal" 
-                                        data-bs-target="#modalEdit"
-                                        onclick="isiModalEdit('{{ akun.kode_akun }}', '{{ akun.nama_akun }}', '{{ akun.kategori }}', '{{ akun.saldo_normal }}', '{{ akun.sub_kategori }}')">
-                                    <i class="fas fa-pencil-alt"></i>
-                                </button>
-                                
-                                <form action="{{ url_for('hapus_akun', kode=akun.kode_akun) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus akun {{ akun.nama_akun }}?');">
-                                    <button type="submit" class="btn btn-sm btn-light text-danger" title="Hapus">
-                                        <i class="fas fa-trash-alt"></i>
+                    {% if coa_list|length > 0 %}
+                        {% for akun in coa_list %}
+                        <tr>
+                            <td class="ps-4 fw-bold text-primary">{{ akun.kode_akun }}</td>
+                            <td class="fw-medium text-dark">{{ akun.nama_akun }}</td>
+                            <td>
+                                {% if akun.kategori == 'Aset' %}
+                                    <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 border border-success border-opacity-25">Aset</span>
+                                {% elif akun.kategori == 'Liabilitas' %}
+                                    <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill px-3 border border-warning border-opacity-25">Liabilitas</span>
+                                {% elif akun.kategori == 'Ekuitas' %}
+                                    <span class="badge bg-info bg-opacity-10 text-info rounded-pill px-3 border border-info border-opacity-25">Ekuitas</span>
+                                {% elif akun.kategori == 'Pendapatan' %}
+                                    <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 border border-primary border-opacity-25">Pendapatan</span>
+                                {% elif akun.kategori == 'Beban' %}
+                                    <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3 border border-danger border-opacity-25">Beban</span>
+                                {% else %}
+                                    <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-3">{{ akun.kategori }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if akun.saldo_normal == 'Debit' %}
+                                    <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-2 border border-primary border-opacity-10">
+                                        <i class="fas fa-arrow-up me-1 small"></i> Debit
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-warning bg-opacity-10 text-dark px-3 py-2 rounded-2 border border-warning border-opacity-10">
+                                        <i class="fas fa-arrow-down me-1 small"></i> Kredit
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end fw-bold text-dark">
+                                Rp {{ "{:,.0f}".format(akun.saldo_akhir|default(0)).replace(',', '.') }}
+                            </td>
+                            <td class="text-center pe-4">
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-light text-primary" title="Edit"
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#modalEdit"
+                                            onclick="isiModalEdit('{{ akun.kode_akun }}', '{{ akun.nama_akun }}', '{{ akun.kategori }}', '{{ akun.saldo_normal }}', '{{ akun.sub_kategori }}')">
+                                        <i class="fas fa-pencil-alt"></i>
                                     </button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
+                                    
+                                    <form action="{{ url_for('hapus_akun', kode=akun.kode_akun) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus akun {{ akun.nama_akun }}?');">
+                                        <button type="submit" class="btn btn-sm btn-light text-danger" title="Hapus">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center py-5">
+                                <div class="text-muted opacity-50 mb-3">
+                                    <i class="fas fa-folder-open fa-4x"></i>
+                                </div>
+                                <h6 class="fw-bold text-secondary">Belum Ada Data Akun</h6>
+                                <p class="small text-muted mb-3">Silakan tambahkan akun baru untuk memulai.</p>
+                                <button class="btn btn-sm btn-outline-primary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#modalTambah">
+                                    <i class="fas fa-plus me-1"></i> Tambah Akun
+                                </button>
+                            </td>
+                        </tr>
+                    {% endif %}
                 </tbody>
             </table>
         </div>
@@ -160,7 +170,6 @@
                         <label class="form-label fw-bold text-primary">Sub Kategori (Posisi Laporan)</label>
                         <select name="sub_kategori" class="form-select" required>
                             <option value="">-- Pilih Posisi --</option>
-                            
                             <optgroup label="Neraca - Aset">
                                 <option value="Aset Lancar">Aset Lancar (Current Assets)</option>
                                 <option value="Aset Tidak Lancar">Aset Tidak Lancar (Fixed Assets)</option>
@@ -170,7 +179,6 @@
                                 <option value="Liabilitas Jangka Panjang">Liabilitas Jangka Panjang</option>
                                 <option value="Ekuitas">Ekuitas / Modal</option>
                             </optgroup>
-
                             <optgroup label="Laba Rugi">
                                 <option value="Pendapatan Usaha">Pendapatan Usaha (Revenue)</option>
                                 <option value="Beban Langsung">Beban Langsung (Direct Cost)</option>
@@ -201,7 +209,6 @@
             <form action="{{ url_for('edit_akun') }}" method="POST">
                 <div class="modal-body">
                     <input type="hidden" name="kode_akun_lama" id="edit_kode_lama">
-                    
                     <div class="mb-3">
                         <label class="form-label">Kode Akun (Tidak dapat diubah)</label>
                         <input type="text" id="edit_kode_display" class="form-control bg-light" disabled>
@@ -241,7 +248,6 @@
                                 <option value="Liabilitas Jangka Panjang">Liabilitas Jangka Panjang</option>
                                 <option value="Ekuitas">Ekuitas / Modal</option>
                             </optgroup>
-
                             <optgroup label="Laba Rugi">
                                 <option value="Pendapatan Usaha">Pendapatan Usaha</option>
                                 <option value="Beban Langsung">Beban Langsung</option>

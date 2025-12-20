@@ -7,20 +7,45 @@
     <div class="col-12">
         
         <div class="card shadow-sm border-0 rounded-4">
-            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center flex-wrap gap-3">
                 <div>
                     <h5 class="fw-bold text-primary mb-0"><i class="fas fa-book me-2"></i> Jurnal Umum</h5>
-                    <small class="text-muted">Daftar seluruh transaksi yang tercatat dalam sistem.</small>
+                    <small class="text-muted">Menampilkan Halaman {{ page }} dari {{ total_pages }} (Total {{ total_rows }} Baris)</small>
                 </div>
-                <a href="{{ url_for('input_jurnal') }}" class="btn btn-primary btn-sm rounded-pill px-4 fw-bold">
-                    <i class="fas fa-plus me-1"></i> Input Baru
-                </a>
+                
+                <div class="d-flex gap-2">
+                    <button onclick="window.print()" class="btn btn-outline-dark btn-sm fw-bold">
+                        <i class="fas fa-print me-1"></i> PDF
+                    </button>
+                    <a href="{{ url_for('input_jurnal') }}" class="btn btn-primary btn-sm rounded-pill px-4 fw-bold">
+                        <i class="fas fa-plus me-1"></i> Input Baru
+                    </a>
+                </div>
+            </div>
+
+            <div class="card-body border-bottom bg-light py-3 d-print-none">
+                <form action="{{ url_for('jurnal_umum') }}" method="GET" class="row g-2 align-items-end">
+                    <div class="col-md-auto">
+                        <label class="small fw-bold text-muted">Dari Tanggal</label>
+                        <input type="date" name="start_date" class="form-control form-control-sm" value="{{ start_date if start_date else '2025-07-01' }}">
+                    </div>
+                    <div class="col-md-auto">
+                        <label class="small fw-bold text-muted">Sampai Tanggal</label>
+                        <input type="date" name="end_date" class="form-control form-control-sm" value="{{ end_date if end_date else '2025-09-30' }}">
+                    </div>
+                    <div class="col-md-auto">
+                        <button type="submit" class="btn btn-primary btn-sm px-3 fw-bold">
+                            <i class="fas fa-filter me-1"></i> Filter
+                        </button>
+                        <a href="{{ url_for('jurnal_umum') }}" class="btn btn-outline-secondary btn-sm px-3">Reset</a>
+                    </div>
+                </form>
             </div>
 
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
-                        <thead class="bg-light text-secondary">
+                        <thead class="bg-light text-secondary small text-uppercase">
                             <tr>
                                 <th class="ps-4 py-3" width="12%">Tanggal</th>
                                 <th class="py-3" width="8%">Ref</th>
@@ -33,54 +58,41 @@
                         </thead>
                         <tbody>
                             {% for row in data_jurnal %}
-                            <tr class="{{ 'table-danger text-danger fst-italic text-decoration-line-through' if row.status == 'Void' else '' }}">
-                                
-                                <td class="ps-4 fw-bold small">{{ row.tanggal }}</td>
-                                
-                                <td><span class="badge bg-light text-dark border">{{ row.kode_akun }}</span></td>
-                                
+                            <tr class="{{ 'bg-danger bg-opacity-10 text-muted text-decoration-line-through' if row.status == 'Void' else '' }}">
+                                <td class="ps-4 fw-bold small text-nowrap">{{ row.tanggal }}</td>
+                                <td><span class="badge bg-light text-dark border">JV-{{ row.id }}</span></td>
                                 <td>
                                     {{ row.deskripsi }}
                                     {% if row.status == 'Void' %}
-                                        <span class="badge bg-danger ms-2">DIBATALKAN</span>
+                                        <span class="badge bg-danger ms-2 text-decoration-none d-inline-block">DIBATALKAN</span>
                                     {% endif %}
                                 </td>
-                                
-                                <td class="small">{{ row.nama_akun }}</td>
-
-                                <td class="text-end fw-bold {{ 'text-secondary' if row.debit == 0 else '' }}">
+                                <td class="small">
+                                    <div class="fw-bold">{{ row.nama_akun }}</div>
+                                    <div class="text-muted" style="font-size: 0.75rem;">{{ row.kode_akun }}</div>
+                                </td>
+                                <td class="text-end fw-bold {{ 'text-primary' if row.debit > 0 and row.status != 'Void' else 'text-muted' }}">
                                     {{ "{:,.0f}".format(row.debit) if row.debit > 0 else '-' }}
                                 </td>
-                                <td class="text-end fw-bold {{ 'text-secondary' if row.kredit == 0 else '' }}">
+                                <td class="text-end fw-bold {{ 'text-danger' if row.kredit > 0 and row.status != 'Void' else 'text-muted' }}">
                                     {{ "{:,.0f}".format(row.kredit) if row.kredit > 0 else '-' }}
                                 </td>
-                                
-                                <td class="text-center">
+                                <td class="text-center pe-3">
                                     {% if row.status != 'Void' %}
                                         <button type="button" class="btn btn-outline-danger btn-sm rounded-circle shadow-sm" 
-                                                data-bs-toggle="modal" 
-                                                data-bs-target="#modalVoid{{ row.id }}" 
-                                                title="Batalkan Transaksi">
+                                                data-bs-toggle="modal" data-bs-target="#modalVoid{{ row.id }}" title="Batalkan">
                                             <i class="fas fa-ban"></i>
                                         </button>
-
+                                        {% include 'components/modal_void.html' ignore missing %} 
                                         <div class="modal fade text-start text-dark fst-normal text-decoration-none" id="modalVoid{{ row.id }}" tabindex="-1" aria-hidden="true">
                                             <div class="modal-dialog modal-dialog-centered">
                                                 <div class="modal-content border-0 shadow-lg">
                                                     <div class="modal-header bg-danger text-white">
-                                                        <h6 class="modal-title fw-bold">
-                                                            <i class="fas fa-exclamation-triangle me-2"></i>Konfirmasi Pembatalan
-                                                        </h6>
+                                                        <h6 class="modal-title fw-bold">Konfirmasi Pembatalan</h6>
                                                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                                                     </div>
                                                     <div class="modal-body p-4">
-                                                        <p class="mb-3">Apakah Anda yakin ingin membatalkan (Void) transaksi ini?</p>
-                                                        
-                                                        <div class="alert alert-warning small border-0 mb-3">
-                                                            <strong><i class="fas fa-info-circle me-1"></i> Catatan Audit:</strong><br>
-                                                            Transaksi tidak akan dihapus dari database, tetapi saldonya akan dikesampingkan (0) dari laporan keuangan.
-                                                        </div>
-
+                                                        <p class="mb-3">Yakin ingin membatalkan transaksi ini?</p>
                                                         <div class="bg-light p-3 rounded small">
                                                             <strong>Detail:</strong><br>
                                                             {{ row.tanggal }} | {{ row.deskripsi }}<br>
@@ -89,27 +101,23 @@
                                                     </div>
                                                     <div class="modal-footer border-0 pt-0">
                                                         <button type="button" class="btn btn-light" data-bs-dismiss="modal">Tutup</button>
-                                                        
                                                         <form action="{{ url_for('void_jurnal', id_jurnal=row.id) }}" method="POST">
-                                                            <button type="submit" class="btn btn-danger fw-bold">
-                                                                Ya, Batalkan Transaksi
-                                                            </button>
+                                                            <button type="submit" class="btn btn-danger fw-bold">Ya, Batalkan</button>
                                                         </form>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                     {% else %}
-                                        <i class="fas fa-lock text-muted" title="Sudah Dibatalkan"></i>
+                                        <i class="fas fa-lock text-muted"></i>
                                     {% endif %}
                                 </td>
                             </tr>
                             {% else %}
                             <tr>
                                 <td colspan="7" class="text-center py-5 text-muted">
-                                    <img src="https://cdn-icons-png.flaticon.com/512/7486/7486747.png" width="80" class="mb-3 opacity-50">
-                                    <p class="mb-0">Belum ada data jurnal.</p>
-                                    <small>Silakan input transaksi baru.</small>
+                                    <i class="fas fa-file-invoice fa-3x mb-3 opacity-25"></i>
+                                    <p class="mb-0">Tidak ada data.</p>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -118,11 +126,43 @@
                 </div>
             </div>
             
-            <div class="card-footer bg-white py-3">
-                <small class="text-muted"><i class="fas fa-info-circle me-1"></i> Baris berwarna merah menandakan transaksi yang telah dibatalkan (Void).</small>
+            <div class="card-footer bg-white py-3 d-print-none">
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center mb-0">
+                        
+                        <li class="page-item {{ 'disabled' if page == 1 else '' }}">
+                            <a class="page-link" href="{{ url_for('jurnal_umum', page=page-1, start_date=start_date, end_date=end_date) }}" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+
+                        {% for p in range(1, total_pages + 1) %}
+                        <li class="page-item {{ 'active' if p == page else '' }}">
+                            <a class="page-link" href="{{ url_for('jurnal_umum', page=p, start_date=start_date, end_date=end_date) }}">
+                                {{ p }}
+                            </a>
+                        </li>
+                        {% endfor %}
+
+                        <li class="page-item {{ 'disabled' if page == total_pages else '' }}">
+                            <a class="page-link" href="{{ url_for('jurnal_umum', page=page+1, start_date=start_date, end_date=end_date) }}" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
             </div>
+
         </div>
-        
     </div>
 </div>
+
+<style>
+    @media print {
+        .d-print-none, .btn, .modal { display: none !important; }
+        .card { border: none !important; box-shadow: none !important; }
+        .card-header { border-bottom: 2px solid black !important; }
+        th:last-child, td:last-child { display: none !important; }
+    }
+</style>
 {% endblock %}

@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash
 import mysql.connector
 import json
 from datetime import date
+import math
 
 app = Flask(__name__)
 app.secret_key = 'bluebird_rahasia'
@@ -90,20 +91,158 @@ def dashboard():
                            line_labels=json.dumps([str(r['tanggal']) for r in line_data]), 
                            line_values=json.dumps([float(r['flow']) for r in line_data]))
 
-# --- JURNAL UMUM ---
+from flask import Flask, render_template, request, redirect, url_for, flash
+import mysql.connector
+import json
+from datetime import date
+
+app = Flask(__name__)
+app.secret_key = 'bluebird_rahasia'
+
+# Konfigurasi Database
+DB_CONFIG = {'host': 'localhost', 'user': 'root', 'password': '', 'database': 'akuntansi_bluebird'}
+
+def get_db():
+    return mysql.connector.connect(**DB_CONFIG)
+
+@app.route('/')
+def index():
+    return redirect(url_for('dashboard'))
+
+# --- DASHBOARD (LOGIKA EXECUTIVE: LABA BERSIH & SALDO KAS) ---
+@app.route('/dashboard')
+def dashboard():
+    conn = get_db()
+    cur = conn.cursor(dictionary=True)
+    
+    # 1. Total Statistik (Kartu 1 & 2)
+    cur.execute("SELECT SUM(debit) as d, SUM(kredit) as k FROM jurnal WHERE status = 'Active'")
+    res = cur.fetchone()
+    t_debit = res['d'] or 0
+    t_kredit = res['k'] or 0
+    
+    # 2. DATA BAR CHART & LABA BERSIH (Kartu 3)
+    # Hitung Pendapatan
+    cur.execute("""
+        SELECT SUM(j.kredit - j.debit) as val 
+        FROM coa c JOIN jurnal j ON c.kode_akun=j.kode_akun 
+        WHERE c.kategori='Pendapatan' AND j.status='Active'
+    """)
+    res_pdpt = cur.fetchone()
+    val_pdpt = res_pdpt['val'] if res_pdpt and res_pdpt['val'] else 0
+    
+    # Hitung Beban
+    cur.execute("""
+        SELECT SUM(j.debit - j.kredit) as val 
+        FROM coa c JOIN jurnal j ON c.kode_akun=j.kode_akun 
+        WHERE c.kategori='Beban' AND j.status='Active'
+    """)
+    res_beban = cur.fetchone()
+    val_beban = res_beban['val'] if res_beban and res_beban['val'] else 0
+    
+    # [LOGIKA BARU] Hitung Laba Bersih untuk Kartu ke-3
+    laba_bersih = val_pdpt - val_beban
+
+    # [LOGIKA BARU] Hitung Saldo Kas & Bank untuk Kartu ke-4
+    # Mengambil akun 1100 (Kas) dan 1101 (Bank)
+    cur.execute("""
+        SELECT SUM(debit - kredit) as val 
+        FROM jurnal 
+        WHERE kode_akun IN ('1100', '1101') AND status = 'Active'
+    """)
+    res_kas = cur.fetchone()
+    saldo_kas = res_kas['val'] if res_kas and res_kas['val'] else 0
+    
+    # 3. DATA PIE CHART: Komposisi ASET
+    cur.execute("""
+        SELECT c.nama_akun, SUM(j.debit - j.kredit) as val 
+        FROM coa c JOIN jurnal j ON c.kode_akun=j.kode_akun 
+        WHERE c.kategori='Aset' AND j.status='Active' 
+        GROUP BY c.nama_akun
+        HAVING val > 0
+    """)
+    pie_aset_data = cur.fetchall()
+    
+    # 4. DATA LINE CHART: Tren Arus Kas (Akun 1100)
+    cur.execute("""
+        SELECT tanggal, SUM(debit - kredit) as flow 
+        FROM jurnal 
+        WHERE kode_akun='1100' AND status='Active' 
+        GROUP BY tanggal 
+        ORDER BY tanggal LIMIT 7
+    """)
+    line_data = cur.fetchall()
+    
+    conn.close()
+    
+    return render_template('dashboard.html', 
+                           t_debit=t_debit, t_kredit=t_kredit,
+                           laba_bersih=laba_bersih, # Dikirim ke Kartu 3
+                           saldo_kas=saldo_kas,     # Dikirim ke Kartu 4
+                           
+                           # Data Chart
+                           bar_label=json.dumps(['Pendapatan', 'Beban']),
+                           bar_data=json.dumps([float(val_pdpt), float(val_beban)]),
+                           pie_labels=json.dumps([r['nama_akun'] for r in pie_aset_data]), 
+                           pie_values=json.dumps([float(r['val']) for r in pie_aset_data]),
+                           line_labels=json.dumps([str(r['tanggal']) for r in line_data]), 
+                           line_values=json.dumps([float(r['flow']) for r in line_data]))
+
+# --- JURNAL UMUM (DENGAN PAGINATION) ---
 @app.route('/jurnal_umum')
 def jurnal_umum():
     conn = get_db()
     cur = conn.cursor(dictionary=True)
+    
+    # 1. Setup Pagination
+    page = request.args.get('page', 1, type=int)
+    per_page = 20  # 20 Baris = Estimasi 10 Transaksi
+    offset = (page - 1) * per_page
+    
+    # 2. Ambil Filter
+    start_date = request.args.get('start_date')
+    end_date = request.args.get('end_date')
+    
+    # --- QUERY 1: HITUNG TOTAL DATA (Untuk tahu jumlah halaman) ---
+    count_query = "SELECT COUNT(*) as total FROM jurnal j WHERE 1=1"
+    params = []
+    
+    if start_date and end_date:
+        count_query += " AND j.tanggal BETWEEN %s AND %s"
+        params.extend([start_date, end_date])
+        
+    cur.execute(count_query, tuple(params))
+    total_rows = cur.fetchone()['total']
+    total_pages = math.ceil(total_rows / per_page)
+    
+    # --- QUERY 2: AMBIL DATA (Dengan Limit & Offset) ---
     query = """
         SELECT j.id, j.tanggal, j.deskripsi, j.kode_akun, c.nama_akun, j.debit, j.kredit, j.status 
         FROM jurnal j JOIN coa c ON j.kode_akun = c.kode_akun 
-        ORDER BY j.tanggal DESC, j.id DESC
+        WHERE 1=1 
     """
-    cur.execute(query)
+    
+    # Gunakan params baru untuk query data karena params lama sudah dipakai execute
+    data_params = []
+    if start_date and end_date:
+        query += " AND j.tanggal BETWEEN %s AND %s"
+        data_params.extend([start_date, end_date])
+    
+    # Sorting & Pagination
+    query += " ORDER BY j.tanggal DESC, j.id ASC LIMIT %s OFFSET %s"
+    data_params.extend([per_page, offset])
+    
+    cur.execute(query, tuple(data_params))
     data = cur.fetchall()
     conn.close()
-    return render_template('jurnal_umum.html', data_jurnal=data)
+    
+    return render_template('jurnal_umum.html', 
+                           data_jurnal=data, 
+                           start_date=start_date, 
+                           end_date=end_date,
+                           page=page, 
+                           total_pages=total_pages,
+                           total_rows=total_rows)
 
 # --- MASTER COA ---
 @app.route('/coa')
@@ -216,7 +355,7 @@ def hapus_akun(kode):
         conn.close()
     return redirect(url_for('coa'))
 
-# --- INPUT JURNAL ---
+# --- INPUT JURNAL (VALIDASI Q3 & DEFAULT TANGGAL FIXED) ---
 @app.route('/jurnal', methods=['GET', 'POST'])
 def input_jurnal():
     conn = get_db()
@@ -230,23 +369,49 @@ def input_jurnal():
             debit_list = request.form.getlist('debit[]')
             kredit_list = request.form.getlist('kredit[]')
             
+            # 1. Validasi Tanggal (Wajib Q3)
+            start_date = '2025-07-01'
+            end_date = '2025-09-30'
+            if tgl < start_date or tgl > end_date:
+                flash(f'Gagal: Tanggal harus dalam periode Q3 (1 Juli - 30 September 2025)!', 'danger')
+                return redirect(url_for('input_jurnal'))
+
             total_d = sum(float(x) for x in debit_list)
             total_k = sum(float(x) for x in kredit_list)
             
+            # 2. Validasi Balance & Nol
             if abs(total_d - total_k) > 1.0:
-                flash(f'Gagal: Jurnal tidak balance! Selisih: {total_d - total_k}', 'danger')
+                flash(f'Gagal: Tidak Balance! Selisih: {total_d - total_k}', 'danger')
             elif total_d == 0:
                 flash('Gagal: Nominal nol!', 'danger')
             else:
+                # 3. Validasi Saldo Kas (Cegah Minus)
+                kredit_kas_baru = 0
                 for i in range(len(akun_list)):
-                    kode = akun_list[i]
-                    d = float(debit_list[i])
-                    k = float(kredit_list[i])
-                    if d > 0 or k > 0:
-                        query = "INSERT INTO jurnal (tanggal, deskripsi, kode_akun, debit, kredit, status) VALUES (%s, %s, %s, %s, %s, 'Active')"
-                        cur.execute(query, (tgl, desc, kode, d, k))
-                conn.commit()
-                flash('Jurnal berhasil disimpan!', 'success')
+                    if akun_list[i] == '1100': # Kode 1100 = KAS
+                        kredit_kas_baru += float(kredit_list[i])
+                
+                saldo_cukup = True
+                if kredit_kas_baru > 0:
+                    cur.execute("SELECT SUM(debit - kredit) as saldo FROM jurnal WHERE kode_akun = '1100' AND status = 'Active'")
+                    res_saldo = cur.fetchone()
+                    saldo_kas = res_saldo['saldo'] if res_saldo['saldo'] else 0
+                    if (saldo_kas - kredit_kas_baru) < 0:
+                        flash(f'Gagal: Saldo Kas Tidak Cukup! Sisa: {saldo_kas:,.0f}', 'danger')
+                        saldo_cukup = False
+                
+                # Simpan jika aman
+                if saldo_cukup:
+                    for i in range(len(akun_list)):
+                        kode = akun_list[i]
+                        d = float(debit_list[i])
+                        k = float(kredit_list[i])
+                        if d > 0 or k > 0:
+                            query = "INSERT INTO jurnal (tanggal, deskripsi, kode_akun, debit, kredit, status) VALUES (%s, %s, %s, %s, %s, 'Active')"
+                            cur.execute(query, (tgl, desc, kode, d, k))
+                    conn.commit()
+                    flash('Jurnal berhasil disimpan!', 'success')
+                    
         except Exception as e:
             conn.rollback()
             flash(f"Error Database: {e}", 'danger')
@@ -256,7 +421,9 @@ def input_jurnal():
     cur.execute("SELECT * FROM coa ORDER BY kode_akun")
     akun_list = cur.fetchall()
     conn.close()
-    return render_template('jurnal.html', akun_list=akun_list, today=date.today().strftime('%Y-%m-%d'))
+    
+    # REVISI: Set Default Tanggal ke Akhir Q3 (2025-09-30) agar user tidak repot
+    return render_template('jurnal.html', akun_list=akun_list, today='2025-09-30')
 
 # --- VOID JURNAL ---
 @app.route('/void_jurnal/<int:id_jurnal>', methods=['POST'])

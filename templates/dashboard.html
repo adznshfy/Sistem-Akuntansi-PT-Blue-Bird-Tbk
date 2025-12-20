@@ -20,52 +20,61 @@
 <div class="row g-4 mb-4">
     <div class="col-xl-3 col-md-6">
         <div class="card h-100 border-start border-4 border-primary shadow-sm hover-effect">
-            <div class="card-body d-flex align-items-center justify-content-between">
-                <div>
-                    <p class="text-muted mb-1 small fw-bold text-uppercase">Total Debit</p>
-                    <h5 class="fw-bold text-dark mb-0">Rp {{ "{:,.0f}".format(t_debit).replace(',', '.') }}</h5>
+            <div class="card-body d-flex align-items-center justify-content-between p-3"> <div class="flex-grow-1 overflow-hidden"> <p class="text-muted mb-1 small fw-bold text-uppercase">Total Debit</p>
+                    <h5 class="fw-bold text-dark mb-0 text-nowrap responsive-text">
+                        <span class="text-secondary fw-normal small me-1" style="font-size: 0.7em;">Rp</span>{{ "{:,.0f}".format(t_debit).replace(',', '.') }}
+                    </h5>
                 </div>
-                <div class="bg-primary bg-opacity-10 p-3 rounded text-primary fs-4">
+                <div class="bg-primary bg-opacity-10 p-2 rounded text-primary fs-4 ms-2 flex-shrink-0">
                     <i class="fa-solid fa-arrow-trend-up"></i>
                 </div>
             </div>
         </div>
     </div>
+
     <div class="col-xl-3 col-md-6">
         <div class="card h-100 border-start border-4 border-danger shadow-sm hover-effect">
-            <div class="card-body d-flex align-items-center justify-content-between">
-                <div>
+            <div class="card-body d-flex align-items-center justify-content-between p-3">
+                <div class="flex-grow-1 overflow-hidden">
                     <p class="text-muted mb-1 small fw-bold text-uppercase">Total Kredit</p>
-                    <h5 class="fw-bold text-dark mb-0">Rp {{ "{:,.0f}".format(t_kredit).replace(',', '.') }}</h5>
+                    <h5 class="fw-bold text-dark mb-0 text-nowrap responsive-text">
+                        <span class="text-secondary fw-normal small me-1" style="font-size: 0.7em;">Rp</span>{{ "{:,.0f}".format(t_kredit).replace(',', '.') }}
+                    </h5>
                 </div>
-                <div class="bg-danger bg-opacity-10 p-3 rounded text-danger fs-4">
+                <div class="bg-danger bg-opacity-10 p-2 rounded text-danger fs-4 ms-2 flex-shrink-0">
                     <i class="fa-solid fa-arrow-trend-down"></i>
                 </div>
             </div>
         </div>
     </div>
+
     <div class="col-xl-3 col-md-6">
-        <div class="card h-100 border-start border-4 border-warning shadow-sm hover-effect">
-            <div class="card-body d-flex align-items-center justify-content-between">
-                <div>
-                    <p class="text-muted mb-1 small fw-bold text-uppercase">Total Akun</p>
-                    <h5 class="fw-bold text-dark mb-0">{{ t_akun }} Akun</h5>
+        <div class="card h-100 border-start border-4 border-success shadow-sm hover-effect">
+            <div class="card-body d-flex align-items-center justify-content-between p-3">
+                <div class="flex-grow-1 overflow-hidden">
+                    <p class="text-muted mb-1 small fw-bold text-uppercase">Laba Bersih (Q3)</p>
+                    <h5 class="fw-bold {{ 'text-success' if laba_bersih >= 0 else 'text-danger' }} mb-0 text-nowrap responsive-text">
+                        <span class="text-secondary fw-normal small me-1" style="font-size: 0.7em;">Rp</span>{{ "{:,.0f}".format(laba_bersih).replace(',', '.') }}
+                    </h5>
                 </div>
-                <div class="bg-warning bg-opacity-10 p-3 rounded text-warning fs-4">
-                    <i class="fa-solid fa-folder-open"></i>
+                <div class="bg-success bg-opacity-10 p-2 rounded text-success fs-4 ms-2 flex-shrink-0">
+                    <i class="fa-solid fa-money-bill-trend-up"></i>
                 </div>
             </div>
         </div>
     </div>
+
     <div class="col-xl-3 col-md-6">
-        <div class="card h-100 border-start border-4 border-success shadow-sm hover-effect">
-            <div class="card-body d-flex align-items-center justify-content-between">
-                <div>
-                    <p class="text-muted mb-1 small fw-bold text-uppercase">Volume Transaksi</p>
-                    <h5 class="fw-bold text-dark mb-0">{{ t_transaksi }} Baris</h5>
+        <div class="card h-100 border-start border-4 border-info shadow-sm hover-effect">
+            <div class="card-body d-flex align-items-center justify-content-between p-3">
+                <div class="flex-grow-1 overflow-hidden">
+                    <p class="text-muted mb-1 small fw-bold text-uppercase">Saldo Kas & Bank</p>
+                    <h5 class="fw-bold text-dark mb-0 text-nowrap responsive-text">
+                        <span class="text-secondary fw-normal small me-1" style="font-size: 0.7em;">Rp</span>{{ "{:,.0f}".format(saldo_kas).replace(',', '.') }}
+                    </h5>
                 </div>
-                <div class="bg-success bg-opacity-10 p-3 rounded text-success fs-4">
-                    <i class="fa-solid fa-receipt"></i>
+                <div class="bg-info bg-opacity-10 p-2 rounded text-info fs-4 ms-2 flex-shrink-0">
+                    <i class="fa-solid fa-wallet"></i>
                 </div>
             </div>
         </div>
@@ -144,11 +153,11 @@
     setInterval(updateClock, 1000);
     updateClock();
 
-    // --- KONFIGURASI CHART ---
+    // --- CHART CONFIG ---
     Chart.defaults.font.family = "'Poppins', sans-serif";
     Chart.defaults.color = '#858796';
 
-    // 1. LINE CHART (ARUS KAS)
+    // 1. LINE CHART
     new Chart(document.getElementById('lineChart'), {
         type: 'line',
         data: {
@@ -156,7 +165,7 @@
             datasets: [{
                 label: 'Arus Kas (Flow)',
                 data: {{ line_values|safe }},
-                borderColor: '#005eb8', // Biru Blue Bird
+                borderColor: '#005eb8',
                 backgroundColor: 'rgba(0, 94, 184, 0.05)',
                 pointBackgroundColor: '#fff',
                 pointBorderColor: '#005eb8',
@@ -173,7 +182,7 @@
         }
     });
 
-    // 2. BAR CHART (PENDAPATAN VS BEBAN) - BARU
+    // 2. BAR CHART
     new Chart(document.getElementById('barChart'), {
         type: 'bar',
         data: {
@@ -181,7 +190,7 @@
             datasets: [{
                 label: 'Nominal (Rp)',
                 data: {{ bar_data|safe }},
-                backgroundColor: ['#1cc88a', '#e74a3b'], // Hijau & Merah
+                backgroundColor: ['#1cc88a', '#e74a3b'],
                 borderRadius: 5,
                 barThickness: 50
             }]
@@ -196,7 +205,7 @@
         }
     });
 
-    // 3. PIE CHART (KOMPOSISI ASET) - UPDATE DARI BEBAN KE ASET
+    // 3. PIE CHART
     const pieDataValues = {{ pie_values|safe }};
     const pieDataLabels = {{ pie_labels|safe }};
     
@@ -228,5 +237,10 @@
 <style>
     .hover-effect { transition: transform 0.2s; }
     .hover-effect:hover { transform: translateY(-5px); }
+    
+    /* CSS Tambahan: Agar angka mengecil otomatis jika layar sempit */
+    @media (max-width: 1400px) {
+        .responsive-text { font-size: 1.1rem !important; }
+    }
 </style>
 {% endblock %}
