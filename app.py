@@ -165,13 +165,19 @@ def dashboard():
     
     # 4. DATA LINE CHART: Tren Arus Kas (Akun 1100)
     cur.execute("""
-        SELECT tanggal, SUM(debit - kredit) as flow 
+        SELECT DATE_FORMAT(tanggal, '%d %b') as tgl_formatted, SUM(debit - kredit) as flow 
         FROM jurnal 
-        WHERE kode_akun='1100' AND status='Active' 
+        WHERE kode_akun='1101' AND status='Active' 
         GROUP BY tanggal 
-        ORDER BY tanggal LIMIT 7
+        ORDER BY tanggal ASC
     """)
     line_data = cur.fetchall()
+    
+    line_labels_list = [x['tgl_formatted'] for x in line_data] if line_data else []
+    line_values_list = [float(x['flow']) for x in line_data] if line_data else []
+    
+    line_labels = json.dumps(line_labels_list)
+    line_values = json.dumps(line_values_list)
     
     conn.close()
     
@@ -185,8 +191,8 @@ def dashboard():
                            bar_data=json.dumps([float(val_pdpt), float(val_beban)]),
                            pie_labels=json.dumps([r['nama_akun'] for r in pie_aset_data]), 
                            pie_values=json.dumps([float(r['val']) for r in pie_aset_data]),
-                           line_labels=json.dumps([str(r['tanggal']) for r in line_data]), 
-                           line_values=json.dumps([float(r['flow']) for r in line_data]))
+                           line_labels=line_labels, 
+                           line_values=line_values)
 
 # --- JURNAL UMUM (DENGAN PAGINATION) ---
 @app.route('/jurnal_umum')
@@ -595,60 +601,74 @@ def laporan_view(jenis):
          ekuitas = cur.fetchall()
 
     elif jenis == 'aruskas':
-        # Ambil semua transaksi yang melibatkan KAS (1100)
-        cur.execute("""
-            SELECT tanggal, deskripsi, (debit-kredit) as aliran 
+        # --- PERBAIKAN 1: DEFINISIKAN TANGGAL DULU ---
+        # Ambil dari parameter URL (misal: ?start_date=2025-07-01)
+        # Atau gunakan default jika tidak ada input
+        from flask import request 
+        start_date = request.args.get('start_date', '2025-07-01') 
+        end_date = request.args.get('end_date', '2025-09-30')
+
+        # --- PERBAIKAN 2: INDENTASI (Semua kode di bawah ini menjorok ke dalam) ---
+        
+        # LANGKAH 1: HITUNG SALDO AWAL (REAL)
+        # Menggunakan akun 1101 sesuai gambar Master COA Anda
+        query_awal = """
+            SELECT COALESCE(SUM(debit - kredit), 0) as saldo_awal
             FROM jurnal 
-            WHERE kode_akun='1100' AND status='Active' 
+            WHERE kode_akun = '1101' 
+            AND status = 'Active' 
+            AND (tanggal < %s OR (tanggal = %s AND deskripsi LIKE '%%Saldo Awal%%'))
+        """
+        cur.execute(query_awal, (start_date, start_date))
+        result_awal = cur.fetchone()
+        kas_awal = result_awal['saldo_awal'] if result_awal else 0
+        
+        # LANGKAH 2: AMBIL TRANSAKSI PERIODE BERJALAN
+        query_aktivitas = """
+            SELECT tanggal, deskripsi, (debit - kredit) as aliran 
+            FROM jurnal 
+            WHERE kode_akun = '1101' 
+            AND status = 'Active' 
+            AND tanggal BETWEEN %s AND %s
+            AND deskripsi NOT LIKE '%%Saldo Awal%%'
             ORDER BY tanggal ASC
-        """)
+        """
+        cur.execute(query_aktivitas, (start_date, end_date))
         raw_cash = cur.fetchall()
         
-        # Siapkan wadah untuk 3 Kategori
         arus_operasi = []
         arus_investasi = []
         arus_pendanaan = []
         
-        kas_awal = 0
-        
-        # LOGIKA PEMILAHAN OTOMATIS (Sederhana)
+        # LANGKAH 3: KLASIFIKASI OTOMATIS
         for row in raw_cash:
             desc = row['deskripsi'].lower()
+            keyword_pendanaan = ['modal', 'saham', 'investor', 'dividen', 'pinjaman bank', 'prive']
+            keyword_investasi = ['beli aset', 'jual aset', 'beli kendaraan', 'peralatan', 'investasi']
             
-            # 1. Cek apakah ini Saldo Awal?
-            if 'saldo awal' in desc or 'migrasi' in desc:
-                kas_awal += row['aliran']
-                continue # Jangan masukkan ke aktivitas, simpan di saldo awal
-            
-            # 2. Cek Aktivitas Pendanaan (Modal, Dividen, Utang Bank)
-            elif any(x in desc for x in ['modal', 'dividen', 'utang bank', 'pinjaman']):
+            if any(x in desc for x in keyword_pendanaan):
                 arus_pendanaan.append(row)
-                
-            # 3. Cek Aktivitas Investasi (Beli/Jual Aset Tetap)
-            elif any(x in desc for x in ['beli kendaraan', 'jual kendaraan', 'beli peralatan', 'investasi']):
+            elif any(x in desc for x in keyword_investasi):
                 arus_investasi.append(row)
-                
-            # 4. Sisanya masuk Operasi (Pendapatan, Beban, Gaji, BBM, Service)
             else:
                 arus_operasi.append(row)
 
-        # Hitung Subtotal
         total_operasi = sum(x['aliran'] for x in arus_operasi)
         total_investasi = sum(x['aliran'] for x in arus_investasi)
         total_pendanaan = sum(x['aliran'] for x in arus_pendanaan)
         
-        # Kenaikan/Penurunan Bersih
         kenaikan_bersih = total_operasi + total_investasi + total_pendanaan
         kas_akhir = kas_awal + kenaikan_bersih
         
-        # Masukkan ke dictionary 'arus_kas' untuk dikirim ke HTML
         arus_kas = {
             'operasi': arus_operasi, 'total_operasi': total_operasi,
             'investasi': arus_investasi, 'total_investasi': total_investasi,
             'pendanaan': arus_pendanaan, 'total_pendanaan': total_pendanaan,
             'kenaikan_bersih': kenaikan_bersih,
             'kas_awal': kas_awal,
-            'kas_akhir': kas_akhir
+            'kas_akhir': kas_akhir,
+            'periode_awal': start_date, 
+            'periode_akhir': end_date
         }
     
     conn.close()

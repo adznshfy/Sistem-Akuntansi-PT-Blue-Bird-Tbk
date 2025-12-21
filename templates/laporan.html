@@ -1,401 +1,542 @@
-{% extends 'base.html' %}
-{% block title %}Laporan Keuangan Konsolidasian{% endblock %}
-
-{% block content %}
+{% extends 'base.html' %} {% block title %}Laporan Keuangan Konsolidasian{%
+endblock %} {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h4 class="fw-bold mb-0">Laporan Keuangan</h4>
-        <p class="text-muted small">PT BLUE BIRD TBK</p>
-    </div>
-    <button class="btn btn-outline-dark btn-sm" onclick="window.print()">
-        <i class="fas fa-print me-1"></i> Cetak PDF
-    </button>
+  <div>
+    <h4 class="fw-bold mb-0">Laporan Keuangan</h4>
+    <p class="text-muted small">PT BLUE BIRD TBK</p>
+  </div>
+  <button class="btn btn-outline-dark btn-sm" onclick="window.print()">
+    <i class="fas fa-print me-1"></i> Cetak PDF
+  </button>
 </div>
 
 {% if jenis == 'labarugi' %}
 <div class="card border-top border-4 border-success shadow">
-    <div class="card-body p-5">
-        <h5 class="text-center fw-bold mb-1">LAPORAN LABA RUGI KOMPREHENSIF</h5>
-        <p class="text-center text-muted small mb-4">
-            Per <span class="fw-bold text-dark">30 September 2025</span>
-        <br>
-        <small class="fst-italic">(Disajikan dalam Rupiah, kecuali dinyatakan lain)</small>
+  <div class="card-body p-5">
+    <h5 class="text-center fw-bold mb-1">LAPORAN LABA RUGI KOMPREHENSIF</h5>
+    <p class="text-center text-muted small mb-4">
+      Per <span class="fw-bold text-dark">30 September 2025</span>
+      <br />
+      <small class="fst-italic"
+        >(Disajikan dalam Rupiah, kecuali dinyatakan lain)</small
+      >
     </p>
 
-        <h6 class="fw-bold text-uppercase text-secondary border-bottom pb-2 mb-3">Pendapatan Neto</h6>
-        <div class="ps-3 mb-4">
-            {% for item in data.list_pendapatan %}
-            <div class="d-flex justify-content-between mb-1">
-                <span>{{ item.kode_akun }} - {{ item.nama_akun }}</span>
-                <span class="fw-medium">Rp {{ "{:,.0f}".format(item.nominal) }}</span>
-            </div>
-            {% endfor %}
-            <div class="d-flex justify-content-between mt-2 pt-2 border-top border-secondary">
-                <span class="fw-bold text-dark">Total Pendapatan Neto</span>
-                <span class="fw-bold text-dark">Rp {{ "{:,.0f}".format(data.total_pendapatan) }}</span>
-            </div>
-        </div>
-
-        <h6 class="fw-bold text-uppercase text-secondary border-bottom pb-2 mb-3 mt-4">Beban Langsung</h6>
-        <div class="ps-3 mb-4">
-            {% for item in data.list_beban_pokok %}
-            <div class="d-flex justify-content-between mb-1">
-                <span>{{ item.kode_akun }} - {{ item.nama_akun }}</span>
-                <span class="text-danger">(Rp {{ "{:,.0f}".format(item.nominal) }})</span>
-            </div>
-            {% endfor %}
-            <div class="d-flex justify-content-between mt-2 pt-2 border-top border-secondary">
-                <span class="fw-bold text-dark">Total Beban Langsung</span>
-                <span class="fw-bold text-danger">(Rp {{ "{:,.0f}".format(data.total_beban_pokok) }})</span>
-            </div>
-        </div>
-
-        <div class="alert alert-success bg-opacity-10 border-0 d-flex justify-content-between align-items-center py-2 px-4 rounded-3 my-3">
-            <h6 class="mb-0 fw-bold text-success">LABA BRUTO (GROSS PROFIT)</h6>
-            <h5 class="mb-0 fw-bold text-success">Rp {{ "{:,.0f}".format(data.laba_kotor) }}</h5>
-        </div>
-
-        <h6 class="fw-bold text-uppercase text-secondary border-bottom pb-2 mb-3 mt-4">Beban Operasional</h6>
-        <div class="ps-3 mb-4">
-            {% if data.list_beban_ops %}
-                {% for item in data.list_beban_ops %}
-                <div class="d-flex justify-content-between mb-1">
-                    <span>{{ item.kode_akun }} - {{ item.nama_akun }}</span>
-                    <span class="text-danger">(Rp {{ "{:,.0f}".format(item.nominal) }})</span>
-                </div>
-                {% endfor %}
-            {% else %}
-                <div class="text-muted fst-italic small mb-2">Tidak ada transaksi beban operasional.</div>
-            {% endif %}
-            
-            <div class="d-flex justify-content-between mt-2 pt-2 border-top border-secondary">
-                <span class="fw-bold text-dark">Total Beban Operasional</span>
-                <span class="fw-bold text-danger">(Rp {{ "{:,.0f}".format(data.total_beban_ops) }})</span>
-            </div>
-        </div>
-
-        <div class="d-flex justify-content-between align-items-center py-2 px-4 border-top border-bottom border-dark my-3 bg-light">
-            <h6 class="mb-0 fw-bold">LABA USAHA (OPERATING PROFIT)</h6>
-            <h5 class="mb-0 fw-bold">Rp {{ "{:,.0f}".format(data.laba_usaha) }}</h5>
-        </div>
-
-        <h6 class="fw-bold text-uppercase text-secondary border-bottom pb-2 mb-3 mt-4">Penghasilan (Beban) Lain-lain</h6>
-        <div class="ps-3 mb-4">
-            {% for item in data.list_lain_lain %}
-            <div class="d-flex justify-content-between mb-1">
-                <span>{{ item.kode_akun }} - {{ item.nama_akun }}</span>
-                <span class="{{ 'text-danger' if item.nominal < 0 else 'text-dark' }}">
-                    {{ "(Rp " if item.nominal < 0 else "Rp " }}
-                    {{ "{:,.0f}".format(item.nominal|abs) }}
-                    {{ ")" if item.nominal < 0 else "" }}
-                </span>
-            </div>
-            {% endfor %}
-        </div>
-
-        <div class="d-flex justify-content-between align-items-center py-2 px-4 border-top border-dark my-2">
-            <h6 class="mb-0 fw-bold text-dark">LABA SEBELUM PAJAK PENGHASILAN</h6>
-            <h5 class="mb-0 fw-bold text-dark">Rp {{ "{:,.0f}".format(data.laba_sebelum_pajak) }}</h5>
-        </div>
-
-        <div class="ps-3 mb-3">
-             <div class="d-flex justify-content-between mb-1">
-                <span>Beban Pajak Penghasilan</span>
-                <span class="text-danger">(Rp {{ "{:,.0f}".format(data.beban_pajak) }})</span>
-            </div>
-        </div>
-
-        <div class="bg-success text-white p-4 rounded-3 shadow-sm d-flex justify-content-between align-items-center mt-3">
-            <div>
-                <h5 class="fw-bold mb-0">LABA TAHUN BERJALAN</h5>
-                <small class="opacity-75">Net Income for the Year</small>
-            </div>
-            <h3 class="fw-bold mb-0">Rp {{ "{:,.0f}".format(data.laba_bersih) }}</h3>
-        </div>
+    <h6 class="fw-bold text-uppercase text-secondary border-bottom pb-2 mb-3">
+      Pendapatan Neto
+    </h6>
+    <div class="ps-3 mb-4">
+      {% for item in data.list_pendapatan %}
+      <div class="d-flex justify-content-between mb-1">
+        <span>{{ item.kode_akun }} - {{ item.nama_akun }}</span>
+        <span class="fw-medium">Rp {{ "{:,.0f}".format(item.nominal) }}</span>
+      </div>
+      {% endfor %}
+      <div
+        class="d-flex justify-content-between mt-2 pt-2 border-top border-secondary"
+      >
+        <span class="fw-bold text-dark">Total Pendapatan Neto</span>
+        <span class="fw-bold text-dark"
+          >Rp {{ "{:,.0f}".format(data.total_pendapatan) }}</span
+        >
+      </div>
     </div>
-</div>
-{% endif %}
 
-{% if jenis == 'neraca' %}
+    <h6
+      class="fw-bold text-uppercase text-secondary border-bottom pb-2 mb-3 mt-4"
+    >
+      Beban Langsung
+    </h6>
+    <div class="ps-3 mb-4">
+      {% for item in data.list_beban_pokok %}
+      <div class="d-flex justify-content-between mb-1">
+        <span>{{ item.kode_akun }} - {{ item.nama_akun }}</span>
+        <span class="text-danger"
+          >(Rp {{ "{:,.0f}".format(item.nominal) }})</span
+        >
+      </div>
+      {% endfor %}
+      <div
+        class="d-flex justify-content-between mt-2 pt-2 border-top border-secondary"
+      >
+        <span class="fw-bold text-dark">Total Beban Langsung</span>
+        <span class="fw-bold text-danger"
+          >(Rp {{ "{:,.0f}".format(data.total_beban_pokok) }})</span
+        >
+      </div>
+    </div>
+
+    <div
+      class="alert alert-success bg-opacity-10 border-0 d-flex justify-content-between align-items-center py-2 px-4 rounded-3 my-3"
+    >
+      <h6 class="mb-0 fw-bold text-success">LABA BRUTO (GROSS PROFIT)</h6>
+      <h5 class="mb-0 fw-bold text-success">
+        Rp {{ "{:,.0f}".format(data.laba_kotor) }}
+      </h5>
+    </div>
+
+    <h6
+      class="fw-bold text-uppercase text-secondary border-bottom pb-2 mb-3 mt-4"
+    >
+      Beban Operasional
+    </h6>
+    <div class="ps-3 mb-4">
+      {% if data.list_beban_ops %} {% for item in data.list_beban_ops %}
+      <div class="d-flex justify-content-between mb-1">
+        <span>{{ item.kode_akun }} - {{ item.nama_akun }}</span>
+        <span class="text-danger"
+          >(Rp {{ "{:,.0f}".format(item.nominal) }})</span
+        >
+      </div>
+      {% endfor %} {% else %}
+      <div class="text-muted fst-italic small mb-2">
+        Tidak ada transaksi beban operasional.
+      </div>
+      {% endif %}
+
+      <div
+        class="d-flex justify-content-between mt-2 pt-2 border-top border-secondary"
+      >
+        <span class="fw-bold text-dark">Total Beban Operasional</span>
+        <span class="fw-bold text-danger"
+          >(Rp {{ "{:,.0f}".format(data.total_beban_ops) }})</span
+        >
+      </div>
+    </div>
+
+    <div
+      class="d-flex justify-content-between align-items-center py-2 px-4 border-top border-bottom border-dark my-3 bg-light"
+    >
+      <h6 class="mb-0 fw-bold">LABA USAHA (OPERATING PROFIT)</h6>
+      <h5 class="mb-0 fw-bold">Rp {{ "{:,.0f}".format(data.laba_usaha) }}</h5>
+    </div>
+
+    <h6
+      class="fw-bold text-uppercase text-secondary border-bottom pb-2 mb-3 mt-4"
+    >
+      Penghasilan (Beban) Lain-lain
+    </h6>
+    <div class="ps-3 mb-4">
+      {% for item in data.list_lain_lain %}
+      <div class="d-flex justify-content-between mb-1">
+        <span>{{ item.kode_akun }} - {{ item.nama_akun }}</span>
+        <span class="{{ 'text-danger' if item.nominal < 0 else 'text-dark' }}">
+          {{ "(Rp " if item.nominal < 0 else "Rp " }} {{
+          "{:,.0f}".format(item.nominal|abs) }} {{ ")" if item.nominal < 0 else
+          "" }}
+        </span>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div
+      class="d-flex justify-content-between align-items-center py-2 px-4 border-top border-dark my-2"
+    >
+      <h6 class="mb-0 fw-bold text-dark">LABA SEBELUM PAJAK PENGHASILAN</h6>
+      <h5 class="mb-0 fw-bold text-dark">
+        Rp {{ "{:,.0f}".format(data.laba_sebelum_pajak) }}
+      </h5>
+    </div>
+
+    <div class="ps-3 mb-3">
+      <div class="d-flex justify-content-between mb-1">
+        <span>Beban Pajak Penghasilan</span>
+        <span class="text-danger"
+          >(Rp {{ "{:,.0f}".format(data.beban_pajak) }})</span
+        >
+      </div>
+    </div>
+
+    <div
+      class="bg-success text-white p-4 rounded-3 shadow-sm d-flex justify-content-between align-items-center mt-3"
+    >
+      <div>
+        <h5 class="fw-bold mb-0">LABA TAHUN BERJALAN</h5>
+        <small class="opacity-75">Net Income for the Year</small>
+      </div>
+      <h3 class="fw-bold mb-0">Rp {{ "{:,.0f}".format(data.laba_bersih) }}</h3>
+    </div>
+  </div>
+</div>
+{% endif %} {% if jenis == 'neraca' %}
 <div class="card border-top border-4 border-primary shadow">
-    <div class="card-body p-5">
-        <h5 class="text-center fw-bold mb-1">LAPORAN POSISI KEUANGAN</h5>
-        <p class="text-center text-muted small mb-4">
-            Per <span class="fw-bold text-dark">30 September 2025</span>
-            <br>
-            <small class="fst-italic">(Disajikan dalam Rupiah)</small>
-        </p>
-        
-        <div class="row">
-            <div class="col-md-6 border-end">
-                <h5 class="fw-bold text-primary mb-3">ASET</h5>
+  <div class="card-body p-5">
+    <h5 class="text-center fw-bold mb-1">LAPORAN POSISI KEUANGAN</h5>
+    <p class="text-center text-muted small mb-4">
+      Per <span class="fw-bold text-dark">30 September 2025</span>
+      <br />
+      <small class="fst-italic">(Disajikan dalam Rupiah)</small>
+    </p>
 
-                <h6 class="fw-bold text-secondary small text-uppercase mt-3 bg-light p-1 ps-2 rounded">Aset Lancar</h6>
-                <table class="table table-borderless table-sm mb-0">
-                    {% for a in aset %}
-                        {% if a.sub_kategori == 'Aset Lancar' %}
-                        <tr>
-                            <td>{{ a.nama_akun }}</td>
-                            <td class="text-end">Rp {{ "{:,.0f}".format(a.val) }}</td>
-                        </tr>
-                        {% endif %}
-                    {% endfor %}
-                </table>
+    <div class="row">
+      <div class="col-md-6 border-end">
+        <h5 class="fw-bold text-primary mb-3">ASET</h5>
 
-                <h6 class="fw-bold text-secondary small text-uppercase mt-4 bg-light p-1 ps-2 rounded">Aset Tidak Lancar</h6>
-                <table class="table table-borderless table-sm mb-0">
-                    {% for a in aset %}
-                        {% if a.sub_kategori == 'Aset Tidak Lancar' %}
-                        <tr>
-                            <td>{{ a.nama_akun }}</td>
-                            <td class="text-end">Rp {{ "{:,.0f}".format(a.val) }}</td>
-                        </tr>
-                        {% endif %}
-                    {% endfor %}
-                </table>
-
-                <div class="alert alert-primary mt-4 d-flex justify-content-between fw-bold">
-                    <span>TOTAL ASET</span>
-                    <span>Rp {{ "{:,.0f}".format(t_aset) }}</span>
-                </div>
-            </div>
-
-            <div class="col-md-6 ps-4">
-                <h5 class="fw-bold text-primary mb-3">LIABILITAS & EKUITAS</h5>
-
-                <h6 class="fw-bold text-secondary small text-uppercase mt-3 bg-light p-1 ps-2 rounded">Liabilitas Jangka Pendek</h6>
-                <table class="table table-borderless table-sm mb-0">
-                    {% for l in liabilitas %}
-                        {% if l.sub_kategori == 'Liabilitas Jangka Pendek' %}
-                        <tr>
-                            <td>{{ l.nama_akun }}</td>
-                            <td class="text-end">Rp {{ "{:,.0f}".format(l.val) }}</td>
-                        </tr>
-                        {% endif %}
-                    {% endfor %}
-                </table>
-
-                <h6 class="fw-bold text-secondary small text-uppercase mt-4 bg-light p-1 ps-2 rounded">Liabilitas Jangka Panjang</h6>
-                <table class="table table-borderless table-sm mb-0">
-                    {% for l in liabilitas %}
-                        {% if l.sub_kategori == 'Liabilitas Jangka Panjang' %}
-                        <tr>
-                            <td>{{ l.nama_akun }}</td>
-                            <td class="text-end">Rp {{ "{:,.0f}".format(l.val) }}</td>
-                        </tr>
-                        {% endif %}
-                    {% endfor %}
-                </table>
-
-                <h6 class="fw-bold text-secondary small text-uppercase mt-4 bg-light p-1 ps-2 rounded">Ekuitas</h6>
-                <table class="table table-borderless table-sm mb-0">
-                    {% for e in ekuitas %}
-                    <tr>
-                        <td>{{ e.nama_akun }}</td>
-                        <td class="text-end">Rp {{ "{:,.0f}".format(e.val) }}</td>
-                    </tr>
-                    {% endfor %}
-                    <tr>
-                        <td class="text-success fst-italic">Laba Tahun Berjalan</td>
-                        <td class="text-end fw-bold text-success">Rp {{ "{:,.0f}".format(laba) }}</td>
-                    </tr>
-                </table>
-
-                <div class="alert alert-primary mt-4 d-flex justify-content-between fw-bold">
-                    <span>TOTAL LIABILITAS & EKUITAS</span>
-                    <span>Rp {{ "{:,.0f}".format(t_pasiva) }}</span>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-{% endif %}
-
-{% if jenis == 'ekuitas' %}
-<div class="card border-top border-4 border-warning shadow">
-    <div class="card-body p-5">
-        <h5 class="text-center fw-bold mb-1">LAPORAN PERUBAHAN EKUITAS</h5>
-        <p class="text-center text-muted small mb-4">
-            Untuk Periode yang Berakhir pada <span class="fw-bold text-dark">30 September 2025</span>
-            <br>
-            <small class="fst-italic">(Disajikan dalam Rupiah)</small>
-        </p>
-
-        <table class="table table-hover">
-            <thead class="table-light">
-                <tr>
-                    <th>KETERANGAN</th>
-                    <th class="text-end">JUMLAH</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td colspan="2" class="fw-bold text-muted small pt-3">SALDO AWAL (1 Januari 2025)</td>
-                </tr>
-                {% for e in ekuitas %}
-                    {% if 'Dividen' not in e.nama_akun %}
-                    <tr>
-                        <td class="ps-3">{{ e.nama_akun }}</td>
-                        <td class="text-end">Rp {{ "{:,.0f}".format(e.val) }}</td>
-                    </tr>
-                    {% endif %}
-                {% endfor %}
-
-                <tr>
-                    <td colspan="2" class="fw-bold text-muted small pt-3">PERUBAHAN PERIODE BERJALAN</td>
-                </tr>
-                
-                <tr>
-                    <td class="ps-3 text-success">Ditambah: Laba Bersih Tahun Berjalan</td>
-                    <td class="text-end fw-bold text-success">
-                        Rp {{ "{:,.0f}".format(laba) }}
-                    </td>
-                </tr>
-
-                {% for e in ekuitas %}
-                    {% if 'Dividen' in e.nama_akun %}
-                    <tr>
-                        <td class="ps-3 text-danger">Dikurangi: {{ e.nama_akun }}</td>
-                        <td class="text-end text-danger">
-                            (Rp {{ "{:,.0f}".format(e.val|abs) }})
-                        </td>
-                    </tr>
-                    {% endif %}
-                {% endfor %}
-
-                {% set t_ek = namespace(value=0) %}
-                {% for e in ekuitas %}
-                    {% set t_ek.value = t_ek.value + e.val %}
-                {% endfor %}
-                
-                <tr class="table-warning border-top border-dark border-2">
-                    <td class="fw-bold fs-5 py-3">SALDO EKUITAS</td>
-                    <td class="text-end fw-bold fs-5 py-3 text-dark">
-                        Rp {{ "{:,.0f}".format(t_ek.value + laba) }}
-                    </td>
-                </tr>
-            </tbody>
+        <h6
+          class="fw-bold text-secondary small text-uppercase mt-3 bg-light p-1 ps-2 rounded"
+        >
+          Aset Lancar
+        </h6>
+        <table class="table table-borderless table-sm mb-0">
+          {% for a in aset %} {% if a.sub_kategori == 'Aset Lancar' %}
+          <tr>
+            <td>{{ a.nama_akun }}</td>
+            <td class="text-end">Rp {{ "{:,.0f}".format(a.val) }}</td>
+          </tr>
+          {% endif %} {% endfor %}
         </table>
-        
-        <div class="mt-4 text-muted small fst-italic">
-            <i class="fas fa-info-circle me-1"></i>
-            Catatan: Saldo ekuitas mencakup Modal Ditempatkan dan Disetor Penuh serta Laba Ditahan yang belum dicadangkan.
+
+        <h6
+          class="fw-bold text-secondary small text-uppercase mt-4 bg-light p-1 ps-2 rounded"
+        >
+          Aset Tidak Lancar
+        </h6>
+        <table class="table table-borderless table-sm mb-0">
+          {% for a in aset %} {% if a.sub_kategori == 'Aset Tidak Lancar' %}
+          <tr>
+            <td>{{ a.nama_akun }}</td>
+            <td class="text-end">Rp {{ "{:,.0f}".format(a.val) }}</td>
+          </tr>
+          {% endif %} {% endfor %}
+        </table>
+
+        <div
+          class="alert alert-primary mt-4 d-flex justify-content-between fw-bold"
+        >
+          <span>TOTAL ASET</span>
+          <span>Rp {{ "{:,.0f}".format(t_aset) }}</span>
         </div>
+      </div>
+
+      <div class="col-md-6 ps-4">
+        <h5 class="fw-bold text-primary mb-3">LIABILITAS & EKUITAS</h5>
+
+        <h6
+          class="fw-bold text-secondary small text-uppercase mt-3 bg-light p-1 ps-2 rounded"
+        >
+          Liabilitas Jangka Pendek
+        </h6>
+        <table class="table table-borderless table-sm mb-0">
+          {% for l in liabilitas %} {% if l.sub_kategori == 'Liabilitas Jangka
+          Pendek' %}
+          <tr>
+            <td>{{ l.nama_akun }}</td>
+            <td class="text-end">Rp {{ "{:,.0f}".format(l.val) }}</td>
+          </tr>
+          {% endif %} {% endfor %}
+        </table>
+
+        <h6
+          class="fw-bold text-secondary small text-uppercase mt-4 bg-light p-1 ps-2 rounded"
+        >
+          Liabilitas Jangka Panjang
+        </h6>
+        <table class="table table-borderless table-sm mb-0">
+          {% for l in liabilitas %} {% if l.sub_kategori == 'Liabilitas Jangka
+          Panjang' %}
+          <tr>
+            <td>{{ l.nama_akun }}</td>
+            <td class="text-end">Rp {{ "{:,.0f}".format(l.val) }}</td>
+          </tr>
+          {% endif %} {% endfor %}
+        </table>
+
+        <h6
+          class="fw-bold text-secondary small text-uppercase mt-4 bg-light p-1 ps-2 rounded"
+        >
+          Ekuitas
+        </h6>
+        <table class="table table-borderless table-sm mb-0">
+          {% for e in ekuitas %}
+          <tr>
+            <td>{{ e.nama_akun }}</td>
+            <td class="text-end">Rp {{ "{:,.0f}".format(e.val) }}</td>
+          </tr>
+          {% endfor %}
+          <tr>
+            <td class="text-success fst-italic">Laba Tahun Berjalan</td>
+            <td class="text-end fw-bold text-success">
+              Rp {{ "{:,.0f}".format(laba) }}
+            </td>
+          </tr>
+        </table>
+
+        <div
+          class="alert alert-primary mt-4 d-flex justify-content-between fw-bold"
+        >
+          <span>TOTAL LIABILITAS & EKUITAS</span>
+          <span>Rp {{ "{:,.0f}".format(t_pasiva) }}</span>
+        </div>
+      </div>
     </div>
+  </div>
 </div>
-{% endif %}
+{% endif %} {% if jenis == 'ekuitas' %}
+<div class="card border-top border-4 border-warning shadow">
+  <div class="card-body p-5">
+    <h5 class="text-center fw-bold mb-1">LAPORAN PERUBAHAN EKUITAS</h5>
+    <p class="text-center text-muted small mb-4">
+      Untuk Periode yang Berakhir pada
+      <span class="fw-bold text-dark">30 September 2025</span>
+      <br />
+      <small class="fst-italic">(Disajikan dalam Rupiah)</small>
+    </p>
 
-{% if jenis == 'aruskas' %}
-<div class="card border-top border-4 border-info shadow">
-    <div class="card-body p-5">
-        <h5 class="text-center fw-bold mb-1">LAPORAN ARUS KAS</h5>
-        <p class="text-center text-muted small mb-4">
-            Untuk Periode yang Berakhir pada <span class="fw-bold text-dark">30 September 2025</span>
-            <br>
-            <small class="fst-italic">(Metode Langsung)</small>
-        </p>
+    <table class="table table-hover">
+      <thead class="table-light">
+        <tr>
+          <th>KETERANGAN</th>
+          <th class="text-end">JUMLAH</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td colspan="2" class="fw-bold text-muted small pt-3">
+            SALDO AWAL (1 Januari 2025)
+          </td>
+        </tr>
+        {% for e in ekuitas %} {% if 'Dividen' not in e.nama_akun %}
+        <tr>
+          <td class="ps-3">{{ e.nama_akun }}</td>
+          <td class="text-end">Rp {{ "{:,.0f}".format(e.val) }}</td>
+        </tr>
+        {% endif %} {% endfor %}
 
-        <div class="table-responsive">
-            <table class="table table-sm table-hover align-middle">
-                <thead class="bg-light">
-                    <tr>
-                        <th colspan="2" class="fw-bold text-primary text-uppercase small py-2">Arus Kas dari Aktivitas Operasi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for row in arus_kas.operasi %}
-                    <tr>
-                        <td class="ps-3">{{ row.deskripsi }}</td>
-                        <td class="text-end font-monospace {{ 'text-danger' if row.aliran < 0 else '' }}">
-                            {{ "(Rp " if row.aliran < 0 else "Rp " }}{{ "{:,.0f}".format(row.aliran|abs) }}{{ ")" if row.aliran < 0 else "" }}
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr><td colspan="2" class="ps-3 fst-italic text-muted small">Tidak ada transaksi.</td></tr>
-                    {% endfor %}
-                    <tr class="fw-bold bg-light">
-                        <td class="ps-3 text-muted small text-uppercase">Arus Kas Bersih dari Aktivitas Operasi</td>
-                        <td class="text-end {{ 'text-danger' if arus_kas.total_operasi < 0 else 'text-dark' }}">
-                            {{ "(Rp " if arus_kas.total_operasi < 0 else "Rp " }}{{ "{:,.0f}".format(arus_kas.total_operasi|abs) }}{{ ")" if arus_kas.total_operasi < 0 else "" }}
-                        </td>
-                    </tr>
-                </tbody>
+        <tr>
+          <td colspan="2" class="fw-bold text-muted small pt-3">
+            PERUBAHAN PERIODE BERJALAN
+          </td>
+        </tr>
 
-                <thead>
-                    <tr><td colspan="2" class="py-2"></td></tr> <tr class="bg-light">
-                        <th colspan="2" class="fw-bold text-primary text-uppercase small py-2">Arus Kas dari Aktivitas Investasi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for row in arus_kas.investasi %}
-                    <tr>
-                        <td class="ps-3">{{ row.deskripsi }}</td>
-                        <td class="text-end font-monospace {{ 'text-danger' if row.aliran < 0 else '' }}">
-                            {{ "(Rp " if row.aliran < 0 else "Rp " }}{{ "{:,.0f}".format(row.aliran|abs) }}{{ ")" if row.aliran < 0 else "" }}
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr><td colspan="2" class="ps-3 fst-italic text-muted small">Tidak ada transaksi.</td></tr>
-                    {% endfor %}
-                    <tr class="fw-bold bg-light">
-                        <td class="ps-3 text-muted small text-uppercase">Arus Kas Bersih dari Aktivitas Investasi</td>
-                        <td class="text-end {{ 'text-danger' if arus_kas.total_investasi < 0 else 'text-dark' }}">
-                            {{ "(Rp " if arus_kas.total_investasi < 0 else "Rp " }}{{ "{:,.0f}".format(arus_kas.total_investasi|abs) }}{{ ")" if arus_kas.total_investasi < 0 else "" }}
-                        </td>
-                    </tr>
-                </tbody>
+        <tr>
+          <td class="ps-3 text-success">
+            Ditambah: Laba Bersih Tahun Berjalan
+          </td>
+          <td class="text-end fw-bold text-success">
+            Rp {{ "{:,.0f}".format(laba) }}
+          </td>
+        </tr>
 
-                <thead>
-                    <tr><td colspan="2" class="py-2"></td></tr> <tr class="bg-light">
-                        <th colspan="2" class="fw-bold text-primary text-uppercase small py-2">Arus Kas dari Aktivitas Pendanaan</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for row in arus_kas.pendanaan %}
-                    <tr>
-                        <td class="ps-3">{{ row.deskripsi }}</td>
-                        <td class="text-end font-monospace {{ 'text-danger' if row.aliran < 0 else '' }}">
-                            {{ "(Rp " if row.aliran < 0 else "Rp " }}{{ "{:,.0f}".format(row.aliran|abs) }}{{ ")" if row.aliran < 0 else "" }}
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr><td colspan="2" class="ps-3 fst-italic text-muted small">Tidak ada transaksi.</td></tr>
-                    {% endfor %}
-                    <tr class="fw-bold bg-light">
-                        <td class="ps-3 text-muted small text-uppercase">Arus Kas Bersih dari Aktivitas Pendanaan</td>
-                        <td class="text-end {{ 'text-danger' if arus_kas.total_pendanaan < 0 else 'text-dark' }}">
-                            {{ "(Rp " if arus_kas.total_pendanaan < 0 else "Rp " }}{{ "{:,.0f}".format(arus_kas.total_pendanaan|abs) }}{{ ")" if arus_kas.total_pendanaan < 0 else "" }}
-                        </td>
-                    </tr>
-                </tbody>
+        {% for e in ekuitas %} {% if 'Dividen' in e.nama_akun %}
+        <tr>
+          <td class="ps-3 text-danger">Dikurangi: {{ e.nama_akun }}</td>
+          <td class="text-end text-danger">
+            (Rp {{ "{:,.0f}".format(e.val|abs) }})
+          </td>
+        </tr>
+        {% endif %} {% endfor %} {% set t_ek = namespace(value=0) %} {% for e in
+        ekuitas %} {% set t_ek.value = t_ek.value + e.val %} {% endfor %}
 
-                <thead>
-                    <tr><td colspan="2" class="py-3 border-bottom border-dark"></td></tr>
-                </thead>
-                <tfoot class="fw-bold fs-6">
-                    <tr>
-                        <td class="py-2">Kenaikan (Penurunan) Bersih Kas</td>
-                        <td class="text-end text-primary">Rp {{ "{:,.0f}".format(arus_kas.kenaikan_bersih) }}</td>
-                    </tr>
-                    <tr>
-                        <td class="py-2 text-muted">Saldo Kas Awal Periode</td>
-                        <td class="text-end text-muted">Rp {{ "{:,.0f}".format(arus_kas.kas_awal) }}</td>
-                    </tr>
-                    <tr class="bg-primary text-white border-top border-dark">
-                        <td class="py-3 ps-3">SALDO KAS AKHIR PERIODE</td>
-                        <td class="py-3 text-end pe-3">Rp {{ "{:,.0f}".format(arus_kas.kas_akhir) }}</td>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
+        <tr class="table-warning border-top border-dark border-2">
+          <td class="fw-bold fs-5 py-3">SALDO EKUITAS</td>
+          <td class="text-end fw-bold fs-5 py-3 text-dark">
+            Rp {{ "{:,.0f}".format(t_ek.value + laba) }}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="mt-4 text-muted small fst-italic">
+      <i class="fas fa-info-circle me-1"></i>
+      Catatan: Saldo ekuitas mencakup Modal Ditempatkan dan Disetor Penuh serta
+      Laba Ditahan yang belum dicadangkan.
     </div>
+  </div>
+</div>
+{% endif %} {% if jenis == 'aruskas' %}
+<div class="card border-top border-4 border-info shadow">
+  <div class="card-body p-5">
+    <h5 class="text-center fw-bold mb-1">LAPORAN ARUS KAS</h5>
+    <p class="text-center text-muted small mb-4">
+      Untuk Periode yang Berakhir pada
+      <span class="fw-bold text-dark">30 September 2025</span>
+      <br />
+      <small class="fst-italic">(Metode Langsung)</small>
+    </p>
+
+    <div class="table-responsive">
+      <table class="table table-sm table-hover align-middle">
+        <thead class="bg-light">
+          <tr>
+            <th
+              colspan="2"
+              class="fw-bold text-primary text-uppercase small py-2"
+            >
+              Arus Kas dari Aktivitas Operasi
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in arus_kas.operasi %}
+          <tr>
+            <td class="ps-3">{{ row.deskripsi }}</td>
+            <td
+              class="text-end font-monospace {{ 'text-danger' if row.aliran < 0 else '' }}"
+            >
+              {{ "(Rp " if row.aliran < 0 else "Rp " }}{{
+              "{:,.0f}".format(row.aliran|abs) }}{{ ")" if row.aliran < 0 else
+              "" }}
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="2" class="ps-3 fst-italic text-muted small">
+              Tidak ada transaksi.
+            </td>
+          </tr>
+          {% endfor %}
+          <tr class="fw-bold bg-light">
+            <td class="ps-3 text-muted small text-uppercase">
+              Arus Kas Bersih dari Aktivitas Operasi
+            </td>
+            <td
+              class="text-end {{ 'text-danger' if arus_kas.total_operasi < 0 else 'text-dark' }}"
+            >
+              {{ "(Rp " if arus_kas.total_operasi < 0 else "Rp " }}{{
+              "{:,.0f}".format(arus_kas.total_operasi|abs) }}{{ ")" if
+              arus_kas.total_operasi < 0 else "" }}
+            </td>
+          </tr>
+        </tbody>
+
+        <thead>
+          <tr>
+            <td colspan="2" class="py-2"></td>
+          </tr>
+          <tr class="bg-light">
+            <th
+              colspan="2"
+              class="fw-bold text-primary text-uppercase small py-2"
+            >
+              Arus Kas dari Aktivitas Investasi
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in arus_kas.investasi %}
+          <tr>
+            <td class="ps-3">{{ row.deskripsi }}</td>
+            <td
+              class="text-end font-monospace {{ 'text-danger' if row.aliran < 0 else '' }}"
+            >
+              {{ "(Rp " if row.aliran < 0 else "Rp " }}{{
+              "{:,.0f}".format(row.aliran|abs) }}{{ ")" if row.aliran < 0 else
+              "" }}
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="2" class="ps-3 fst-italic text-muted small">
+              Tidak ada transaksi.
+            </td>
+          </tr>
+          {% endfor %}
+          <tr class="fw-bold bg-light">
+            <td class="ps-3 text-muted small text-uppercase">
+              Arus Kas Bersih dari Aktivitas Investasi
+            </td>
+            <td
+              class="text-end {{ 'text-danger' if arus_kas.total_investasi < 0 else 'text-dark' }}"
+            >
+              {{ "(Rp " if arus_kas.total_investasi < 0 else "Rp " }}{{
+              "{:,.0f}".format(arus_kas.total_investasi|abs) }}{{ ")" if
+              arus_kas.total_investasi < 0 else "" }}
+            </td>
+          </tr>
+        </tbody>
+
+        <thead>
+          <tr>
+            <td colspan="2" class="py-2"></td>
+          </tr>
+          <tr class="bg-light">
+            <th
+              colspan="2"
+              class="fw-bold text-primary text-uppercase small py-2"
+            >
+              Arus Kas dari Aktivitas Pendanaan
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in arus_kas.pendanaan %}
+          <tr>
+            <td class="ps-3">{{ row.deskripsi }}</td>
+            <td
+              class="text-end font-monospace {{ 'text-danger' if row.aliran < 0 else '' }}"
+            >
+              {{ "(Rp " if row.aliran < 0 else "Rp " }}{{
+              "{:,.0f}".format(row.aliran|abs) }}{{ ")" if row.aliran < 0 else
+              "" }}
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="2" class="ps-3 fst-italic text-muted small">
+              Tidak ada transaksi.
+            </td>
+          </tr>
+          {% endfor %}
+          <tr class="fw-bold bg-light">
+            <td class="ps-3 text-muted small text-uppercase">
+              Arus Kas Bersih dari Aktivitas Pendanaan
+            </td>
+            <td
+              class="text-end {{ 'text-danger' if arus_kas.total_pendanaan < 0 else 'text-dark' }}"
+            >
+              {{ "(Rp " if arus_kas.total_pendanaan < 0 else "Rp " }}{{
+              "{:,.0f}".format(arus_kas.total_pendanaan|abs) }}{{ ")" if
+              arus_kas.total_pendanaan < 0 else "" }}
+            </td>
+          </tr>
+        </tbody>
+
+        <thead>
+          <tr>
+            <td colspan="2" class="py-3 border-bottom border-dark"></td>
+          </tr>
+        </thead>
+        <tfoot class="fw-bold fs-6">
+          <tr>
+            <td class="py-2">Kenaikan (Penurunan) Bersih Kas</td>
+            <td
+              class="text-end {{ 'text-danger' if arus_kas.kenaikan_bersih < 0 else 'text-primary' }}"
+            >
+              {{ "(Rp " if arus_kas.kenaikan_bersih < 0 else "Rp " }}{{
+              "{:,.0f}".format(arus_kas.kenaikan_bersih|abs) }}{{ ")" if
+              arus_kas.kenaikan_bersih < 0 else "" }}
+            </td>
+          </tr>
+          <tr>
+            <td class="py-2 text-muted">Saldo Kas Awal Periode</td>
+            <td class="text-end text-muted">
+              Rp {{ "{:,.0f}".format(arus_kas.kas_awal) }}
+            </td>
+          </tr>
+          <tr class="bg-primary text-white border-top border-dark">
+            <td class="py-3 ps-3">SALDO KAS AKHIR PERIODE</td>
+            <td class="py-3 text-end pe-3">
+              Rp {{ "{:,.0f}".format(arus_kas.kas_akhir) }}
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
 </div>
 {% endif %}
 
 <style>
-    @media print {
-        .d-print-none, .btn, .nav { display: none !important; }
-        .card { border: none !important; box-shadow: none !important; }
+  @media print {
+    .d-print-none,
+    .btn,
+    .nav {
+      display: none !important;
     }
+    .card {
+      border: none !important;
+      box-shadow: none !important;
+    }
+  }
 </style>
 {% endblock %}
